@@ -62,9 +62,9 @@ struct MyApp: App {
 }
 ```
 
-### Connecting to appgrowstack
+### Connecting to a server
 
-This package works on its own and keeps the records wherever its sink puts them. Apps that use appgrowstack do not wire the server here: enable the matching trait of [swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack) (SwiftPM traits), which connects this package to it.
+The package works on its own. To connect it to a server, enable the matching trait of the connector package [swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack) (SwiftPM traits) instead of wiring a server here.
 
 ## Installation
 

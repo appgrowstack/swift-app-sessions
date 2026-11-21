@@ -62,9 +62,9 @@ struct MyApp: App {
 }
 ```
 
-### appgrowstackにつなぐ
+### サーバーにつなぐ
 
-このパッケージは単体で動き、記録は送り先が置く所に残る。appgrowstackを使うアプリは、ここでサーバーをつながない。[swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack)の対応するtrait（SwiftPMのtraits）を有効にすると、このパッケージがappgrowstackにつながる。
+このパッケージは単体で使えます。サーバーにつなぐときは、このパッケージで送り先を書く代わりに、コネクターのパッケージ [swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack) の対応するtrait（SwiftPMのtraits）を有効にします。
 
 ## 入れ方
 
