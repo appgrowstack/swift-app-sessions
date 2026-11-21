@@ -17,9 +17,11 @@ extension View {
         modifier(SessionMarkerModifier(kind: .mask))
     }
 
-    /// While this view is on screen, the recording takes no frames (a blank frame `no_capture` instead).
+    /// While this screen is shown, and while it lies under the shown screen (a screen pushed on it in
+    /// a NavigationStack, a sheet presented from it), the recording takes no frames (blank frames
+    /// `no_capture` instead). Put it on the screen's root view.
     public func sessionNoCapture() -> some View {
-        modifier(SessionNoCaptureModifier())
+        modifier(SessionMarkerModifier(kind: .noCapture))
     }
 
     /// Records how far this scroll view was scrolled as the list `name` (iOS 18 and later; earlier
@@ -38,6 +40,7 @@ struct SessionMarkerModifier: ViewModifier {
     enum Kind: Equatable {
         case target(String)
         case mask
+        case noCapture
     }
 
     let kind: Kind
@@ -59,6 +62,7 @@ struct SessionMarkerRepresentable: UIViewRepresentable {
         switch kind {
         case .target(let name): .target(name)
         case .mask: .mask
+        case .noCapture: .noCapture
         }
     }
 
@@ -67,14 +71,6 @@ struct SessionMarkerRepresentable: UIViewRepresentable {
     func updateUIView(_ view: SessionMarkerView, context: Context) { view.kind = markerKind }
 }
 #endif
-
-struct SessionNoCaptureModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .onAppear { AppSessions.current?.beginNoCapture() }
-            .onDisappear { AppSessions.current?.endNoCapture() }
-    }
-}
 
 struct SessionScrollModifier: ViewModifier {
     let name: String

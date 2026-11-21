@@ -59,7 +59,6 @@ public final class AppSessions {
     private var rage: RageDetector
     private var backHint: (via: SessionBackVia, at: Int)?
     private var scrolls: [String: SessionRules.ScrollDepth] = [:]
-    private var noCaptureDepth = 0
 
     /// The recording's decision from the sink for this session. Without one, `buffer`.
     public private(set) var replayMode: SessionReplayMode = .buffer
@@ -94,8 +93,6 @@ public final class AppSessions {
     public var currentScreen: String? { navigator.current }
     /// The light record never captures frames (the recording does), so it never reports dead taps.
     public var isCapturing: Bool { false }
-    /// A screen marked `.sessionNoCapture()` is on screen.
-    public var isCaptureSuppressed: Bool { noCaptureDepth > 0 }
     /// Batches waiting for the sink.
     public var waitingBatches: Int { state.outbox.count + (state.open?.pending.isEmpty == false ? 1 : 0) }
 
@@ -317,11 +314,6 @@ public final class AppSessions {
         save()
         scheduleFlush()
     }
-
-    // MARK: - Capture marks
-
-    public func beginNoCapture() { noCaptureDepth += 1 }
-    public func endNoCapture() { noCaptureDepth = max(0, noCaptureDepth - 1) }
 
     // MARK: - Sending
 

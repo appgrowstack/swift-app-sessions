@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- `.sessionNoCapture()` places a mark in the screen's views instead of counting `onAppear` and
+  `onDisappear`. A screen pushed on a marked screen in a NavigationStack, or a sheet presented from
+  it, stays blank until the marked screen is popped (the mark used to end when the pushed screen
+  appeared). `AppSessions.beginNoCapture()`, `endNoCapture()` and `isCaptureSuppressed` are removed.
+
+### Added
+
+- `SessionCapture.blankReason(noCaptureScreens:)`: why a frame taken now would be blank, from the
+  marks on the screens shown and kept under the shown one, an alert or an action sheet that is up
+  (its text field cannot carry `.sessionMask()`), the app not being active, and the manifest's
+  `no_capture_screens`.
+- `SessionRules.captureScene(roots:appActive:screen:)` and `SessionRules.blankReason(_:noCaptureScreens:)`
+  with `SessionScreenNode`, `SessionBlankReason` and `SessionMarkerView.Kind.noCapture`.
+
 ## [0.1.1] - 2026-11-22
 
 ### Fixed

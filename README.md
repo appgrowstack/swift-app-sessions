@@ -17,7 +17,7 @@ English | [Japanese](README.ja.md)
 - **Marks.** Some events (`paywall_shown`, `purchase_completed`, `campaign_shown` and others) also make a mark, and `mark(_:ref:side:)` adds one without an event
 - **No dependencies.** Foundation, Observation, UIKit and MetricKit; SwiftUI only in `SessionsSwiftUI`
 
-The light record keeps no pixels. `.sessionMask()` and `.sessionNoCapture()` only place marks.
+The light record keeps no pixels. `.sessionMask()` and `.sessionNoCapture()` only place marks. A screen marked `.sessionNoCapture()` keeps the recording blank while it is shown and while it lies under the shown screen (a screen pushed on it, a sheet presented from it); alerts and action sheets keep it blank while they are up. `SessionCapture.blankReason(noCaptureScreens:)` gives the reason a frame taken now would be blank.
 
 ### Where the records go
 

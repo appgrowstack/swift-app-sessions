@@ -17,7 +17,7 @@ iOSアプリの中で人が何をしたかを、セッションごとに記録�
 - **マーク。** 一部の出来事（`paywall_shown`・`purchase_completed`・`campaign_shown`など）はマークも作る。`mark(_:ref:side:)`で出来事なしにマークを足せる
 - **依存なし。** Foundation・Observation・UIKit・MetricKitだけ。SwiftUIを使うのは`SessionsSwiftUI`だけ
 
-軽い記録は画素を持たない。`.sessionMask()`と`.sessionNoCapture()`はマークを置くだけ。
+軽い記録は画素を持たない。`.sessionMask()`と`.sessionNoCapture()`はマークを置くだけ。`.sessionNoCapture()`を付けた画面は、見えている間と、その上に別の画面が重なっている間（pushした先・その画面から出したシート）、録画を撮らない。アラートとアクションシートも出ている間は撮らない。今撮ると撮らない理由は`SessionCapture.blankReason(noCaptureScreens:)`で分かる。
 
 ### 記録の送り先
 

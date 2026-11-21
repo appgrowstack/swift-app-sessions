@@ -127,6 +127,26 @@ public final class SessionCapture {
         return name.contains("Keyboard") || name.contains("TextEffects")
     }
 
+    // MARK: - Frames not to take
+
+    /// Why a frame taken now would be blank, or nil to take it. A screen marked `.sessionNoCapture()`
+    /// keeps the frames blank while it is shown and while it lies under the shown screen (pushed on
+    /// it in a navigation stack, or presented from it). An alert or an action sheet keeps them blank
+    /// while it is up (its text field cannot carry `.sessionMask()`), and so does the system over
+    /// the app (the app is not active). `noCaptureScreens` is the manifest's `no_capture_screens`.
+    public func blankReason(noCaptureScreens: Set<String> = []) -> SessionBlankReason? {
+        SessionRules.blankReason(Self.captureScene(screen: sessions.currentScreen), noCaptureScreens: noCaptureScreens)
+    }
+
+    static func captureScene(screen: String?) -> SessionRules.CaptureScene {
+        let roots = windows().filter { !$0.isHidden && $0.alpha > 0.01 && !isSystemWindow($0) }
+            .compactMap(\.rootViewController).map { SessionScreenController($0) }
+        var scene = SessionRules.captureScene(roots: roots, appActive: UIApplication.shared.applicationState == .active, screen: screen)
+        // An alert shown in a window of its own (older system alerts, an app's own alert window).
+        if windows().contains(where: { !$0.isHidden && NSStringFromClass(type(of: $0)).contains("Alert") }) { scene.alertShown = true }
+        return scene
+    }
+
     /// The largest visible scroll view that scrolls up and down, outside lists marked `.sessionScroll`.
     static func mainScrollView(in window: UIWindow) -> UIScrollView? {
         var best: (UIScrollView, CGFloat)?
@@ -141,6 +161,40 @@ public final class SessionCapture {
         }
         visit(window)
         return best?.0
+    }
+}
+
+/// A view controller as the capture walks it (``SessionScreenNode``), read on the main thread.
+struct SessionScreenController: SessionScreenNode {
+    let hasNoCaptureMark: Bool
+    let isAlert: Bool
+    let shownChildren: [SessionScreenController]
+    private let presentedScreens: [SessionScreenController]
+
+    var presented: SessionScreenController? { presentedScreens.first }
+
+    @MainActor
+    init(_ controller: UIViewController) {
+        hasNoCaptureMark = controller.viewIfLoaded.map { SessionMarkerView.containsNoCapture($0) } ?? false
+        isAlert = controller is UIAlertController
+        let children: [UIViewController]
+        switch controller {
+        case let navigation as UINavigationController:
+            // The screens under the top one keep their marks: SwiftUI's NavigationStack is one of these.
+            children = navigation.viewControllers
+        case let tabs as UITabBarController:
+            children = tabs.selectedViewController.map { [$0] } ?? []
+        case let split as UISplitViewController:
+            children = split.viewControllers
+        default:
+            children = controller.children.filter { $0.viewIfLoaded?.window != nil }
+        }
+        shownChildren = children.map { SessionScreenController($0) }
+        if let presented = controller.presentedViewController, presented.presentingViewController === controller {
+            presentedScreens = [SessionScreenController(presented)]
+        } else {
+            presentedScreens = []
+        }
     }
 }
 
@@ -186,12 +240,14 @@ final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelega
                            shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
 }
 
-/// A view that marks a part of the screen: a named tap target (`.sessionTarget`), or something to
-/// hide from the recording (`.sessionMask`). It draws nothing and takes no touches.
+/// A view that marks a part of the screen: a named tap target (`.sessionTarget`), something to
+/// hide from the recording (`.sessionMask`), or a screen not to record (`.sessionNoCapture`). It
+/// draws nothing and takes no touches.
 public final class SessionMarkerView: UIView {
     public enum Kind: Equatable, Sendable {
         case target(String)
         case mask
+        case noCapture
     }
 
     public var kind: Kind
@@ -223,6 +279,13 @@ public final class SessionMarkerView: UIView {
         }
         visit(window)
         return best?.0
+    }
+
+    /// `view` or a view inside it carries `.sessionNoCapture()`. Hidden views count too: a mark
+    /// must not be lost because SwiftUI hid the branch for a moment.
+    static func containsNoCapture(_ view: UIView) -> Bool {
+        if let marker = view as? SessionMarkerView, marker.kind == .noCapture { return true }
+        return view.subviews.contains { containsNoCapture($0) }
     }
 
     /// The frames of every `.sessionMask()` in `window` (window coordinates).
