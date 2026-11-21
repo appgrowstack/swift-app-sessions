@@ -1,0 +1,36 @@
+{
+  "description": "プロジェクトを絞ったエージェントのトークンでも、自分のトークンはすぐ取り消せる（取り消しはプロジェクトに付かない操作）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": "gamification-app"
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.read",
+        "campaigns.push",
+        "access.token.revoke"
+      ],
+      "projects": [
+        "gamification-app"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "access.token.revoke",
+    "project": null,
+    "own_token": true
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}
