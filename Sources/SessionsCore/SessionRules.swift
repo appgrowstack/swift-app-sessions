@@ -333,6 +333,9 @@ public enum SessionRules {
         var dropped = false
         for (key, value) in chosen {
             guard let value else { continue }
+            // NaN and infinity are not JSON numbers: kept, they would make every later save of the state and
+            // every send of the batch fail
+            if case .double(let number) = value, !number.isFinite { continue }
             if case .string(let text) = value, text.utf16.count > maxPropLength {
                 dropped = true
                 continue

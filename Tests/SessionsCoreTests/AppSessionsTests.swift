@@ -252,6 +252,16 @@ struct AppSessionsTests {
         ])
     }
 
+    @Test func aNumberThatIsNotFiniteIsDroppedSoTheBatchStillEncodes() async throws {
+        let sessions = make()
+        sessions.start()
+        sessions.observe("habit_achieved", ["streak": .double(.nan), "ratio": .double(.infinity), "count": .int(3)], source: .common)
+        await sessions.flush()
+        let events = await sink.events.map(\.event).filter { $0.kind == "event" }
+        #expect(events == [.event(t: 0, name: "habit_achieved", props: ["count": .int(3)], propsDropped: false)])
+        for batch in await sink.batches { _ = try batch.jsonData() }
+    }
+
     @Test func keepPropsFromTheSinkReplaceTheConfigured() async {
         let sessions = make()
         await sink.enqueue(.accepted(replay: .record, keepProps: ["book_added": ["via"]]))
