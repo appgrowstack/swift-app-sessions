@@ -1,0 +1,110 @@
+{
+  "project": "reading-memory",
+  "placements": {
+    "survey": {
+      "kind": "sheet",
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      },
+      "template": "survey",
+      "fields": {
+        "question": {
+          "type": "text",
+          "required": true,
+          "max_chars": 60
+        },
+        "choice_1": {
+          "type": "text",
+          "required": true,
+          "max_chars": 24
+        },
+        "choice_2": {
+          "type": "text",
+          "required": true,
+          "max_chars": 24
+        },
+        "choice_3": {
+          "type": "text",
+          "required": false,
+          "max_chars": 24
+        },
+        "choice_4": {
+          "type": "text",
+          "required": false,
+          "max_chars": 24
+        },
+        "choice_5": {
+          "type": "text",
+          "required": false,
+          "max_chars": 24
+        },
+        "choice_6": {
+          "type": "text",
+          "required": false,
+          "max_chars": 24
+        },
+        "scale": {
+          "type": "int",
+          "required": false
+        },
+        "free_text": {
+          "type": "bool",
+          "required": false
+        },
+        "free_text_hint": {
+          "type": "text",
+          "required": false,
+          "max_chars": 40
+        }
+      }
+    }
+  },
+  "assets": {},
+  "actions": {
+    "submit_answer": {
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      },
+      "template": "survey",
+      "args": {}
+    },
+    "open_settings": {
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      },
+      "args": {}
+    }
+  },
+  "facts": {
+    "is_premium": {
+      "type": "bool",
+      "source": "device",
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      }
+    },
+    "paywall_closed_count": {
+      "type": "int",
+      "source": "device",
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      }
+    },
+    "books_count": {
+      "type": "int",
+      "source": "device",
+      "since": {
+        "ios": "2.4.0",
+        "android": "2.4.0"
+      }
+    }
+  },
+  "link_hosts": [
+    "readingmemory.app"
+  ]
+}

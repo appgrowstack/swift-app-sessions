@@ -1,0 +1,112 @@
+{
+  "description": "解約の途中の出来事をきっかけにしたアンケートは誤り survey.not_in_cancel（P25）",
+  "manifest": "reading-memory",
+  "campaign_policy": {
+    "max_shown_cap": 4,
+    "holdout_min": 0.2
+  },
+  "stores": {
+    "ios": {
+      "version": "3.3.0"
+    },
+    "android": {
+      "version": "3.3.0"
+    }
+  },
+  "campaigns": [
+    {
+      "schema_version": 1,
+      "status": "active",
+      "priority": 40,
+      "platforms": [
+        "ios",
+        "android"
+      ],
+      "app_version": {
+        "ios": ">=2.4.0",
+        "android": ">=2.4.0"
+      },
+      "starts_at": null,
+      "ends_at": null,
+      "id": "survey-why-not-premium",
+      "type": "survey",
+      "title": "ペイウォールを閉じた人に、次の起動以降の本を足した後で、今は買わない理由を1問だけ聞く",
+      "purpose": "買わない理由の割合（値段・まだ分からない・欲しい機能が無い）を集め、ペイウォールの次の変え方を決める",
+      "triggers": [
+        {
+          "id": "cancel",
+          "event": "subscription_cancel_started",
+          "where": null,
+          "wait_seconds": 2
+        }
+      ],
+      "audience": {
+        "all": [
+          {
+            "fact": "is_premium",
+            "eq": false
+          },
+          {
+            "fact": "paywall_closed_count",
+            "gte": 1
+          }
+        ]
+      },
+      "limits": {
+        "max_shown": 1,
+        "min_hours_between": 0,
+        "after_dismiss_days": 30,
+        "after_action_days": null
+      },
+      "holdout": 0,
+      "show": {
+        "placement": "survey",
+        "values": {
+          "question": {
+            "ja": "今は Premium にしない、一番の理由は？",
+            "en": "What's the main reason you're not on Premium yet?"
+          },
+          "choice_1": {
+            "ja": "値段",
+            "en": "The price"
+          },
+          "choice_2": {
+            "ja": "まだよく分からない",
+            "en": "Not sure what I'd get"
+          },
+          "choice_3": {
+            "ja": "欲しい機能が無い",
+            "en": "Missing a feature I want"
+          },
+          "choice_4": {
+            "ja": "ほか",
+            "en": "Something else"
+          },
+          "free_text": true,
+          "free_text_hint": {
+            "ja": "よければ、ひとことで",
+            "en": "Anything to add? (optional)"
+          }
+        },
+        "text_key": "campaign.survey_why_not_premium"
+      },
+      "on_tap": {
+        "action": "submit_answer",
+        "args": {}
+      },
+      "goals": [
+        {
+          "event": "survey_answered",
+          "where": null,
+          "within_hours": 1
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "errors": [
+      "survey.not_in_cancel"
+    ],
+    "warnings": []
+  }
+}
