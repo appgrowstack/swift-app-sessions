@@ -1,80 +1,105 @@
-[English](./README.md) | 日本語
-
 # swift-app-sessions
 
-アプリの中で人が何をしたかを、セッションごとに見る。どの画面をどう通ったか・どこをタップしたか・
-何度もタップした所やすぐ戻った所・どこまでスクロールしたか・アプリが止まった時間・セッションの終わり方。
-記録は端末に溜めるか、アプリが決めた送り先へ渡す。
+iOSアプリの中で人が何をしたかを、セッションごとに記録する。画面・タップ・rage tap・すぐ戻った操作・スクロールの深さ・止まった時間・セッションの終わり方を残す。
 
-![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)
-![Platforms](https://img.shields.io/badge/Platforms-iOS%2017%20%7C%20macOS%2014-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+[English](README.md) | 日本語
 
-> 非公開のモノリポで開発し、ここへは片方向にコピーしている。Issue は歓迎、プルリクエストは受け付けない。
+## 機能
 
-## できること
+- **セッションの区切り。** 起動で1つ始まり、バックグラウンドに30分いた後に戻ったときにも始まる。idは`ses_`と20文字
+- **画面は計測の出来事から。** `screen_viewed`でその画面へ動く。今の画面の下の画面へ戻るのは`pop`で、`back`と、入ってから2秒以内なら`quick_back`も記録する
+- **タッチを止めないタップの記録。** 各ウィンドウに、何も認識しないジェスチャーの認識を足す。位置はウィンドウに対する0〜10000（iPadの分割のウィンドウも）。`.sessionTarget("…")`で要素に名前を付ける
+- **rage tap。** 最初のタップから1秒以内・30pt以内に3回以上
+- **スクロールの深さ。** 画面ごとに、主なスクロールビューの一番深い所を残す。`.sessionScroll("…")`と`.sessionRow(_:in:)`で名前を付けた一覧も
+- **終わり方。** `background_timeout`・`crashed`（MetricKit。レポートが遅れて届いても直す）・`hung`（監視のスレッド）・`killed`・`unknown`を次の起動で決める
+- **アプリの出来事は残す物を絞る。** 共通のカタログの出来事は値を残す。アプリ独自の出来事は`keepProps`に書いたプロパティだけを残す。48文字を超える文字列は捨てる
+- **再起動やオフラインでも消えない。** 送れていない物は保存し、同じバッチの番号で後から送る。受ける側は重なりを捨てられる
+- **マーク。** 一部の出来事（`paywall_shown`・`purchase_completed`・`campaign_shown`など）はマークも作る。`mark(_:ref:side:)`で出来事なしにマークを足せる
+- **依存なし。** Foundation・Observation・UIKit・MetricKitだけ。SwiftUIを使うのは`SessionsSwiftUI`だけ
 
-- **セッションの区切り。** 起動と、裏に30分いた後に前へ戻った時に始まる。id は `ses_` ＋20文字
-- **画面は計測から。** `screen_viewed` の画面へ動く。今の画面の下の画面へ戻るのは `pop` で、`back` と、入って2秒以内なら `quick_back` も出す
-- **タッチを止めないタップの記録。** 各窓に何も認識しない認識を足す。位置は窓の幅と高さに対する 0〜10000（iPad の分割の窓も）。`.sessionTarget("…")` で要素に名前を付ける
-- **rage tap。** 最初のタップから1秒以内・30pt 以内に3回以上
-- **スクロールの深さ。** 画面ごとの主なスクロールの一番深い所。`.sessionScroll("…")`・`.sessionRow(_:in:)` で名前の付いた一覧も
-- **終わり方。** `background_timeout`・`crashed`（MetricKit。遅れて届いても直す）・`hung`（監視のスレッド。止まったまま落ちても hung）・`killed`・`unknown` を次の起動で決める
-- **アプリの出来事は残す物を絞る。** 共通のカタログの値は残し、アプリの出来事は書いた props だけ。48文字を超える文字は捨てる
-- **落ちても・つながらなくても。** 送れていない物は溜めて、同じバッチの番号で後から送る（受ける側が重なりを捨てられる）
-- **依存なし。** Foundation・Observation・UIKit・MetricKit。SwiftUI は `SessionsSwiftUI` だけ
+軽い記録は画素を持たない。`.sessionMask()`と`.sessionNoCapture()`はマークを置くだけ。
 
-軽い記録は画素を持たない。`.sessionMask()`・`.sessionNoCapture()` は録画のために今からマークを置く（録画はこのバージョンに入っていない）。
+### 記録の送り先
 
-## 使い方
+`AppSessions`はバッチを1つずつ`SessionSink`に渡す。
+
+| 送り先 | すること |
+|---|---|
+| `FileSessionSink` | セッションごとのファイルに、バッチを1行のJSONで足す。20MBを超えたら古い物から消す。テスター向けの画面は`files()`を共有できる |
+| `DebugSessionSink` | 直近のバッチをメモリに持ち（`batches`）、1つずつ出力もする |
+| 自前の物 | `func send(_ batch: SessionBatch) async throws -> SessionSinkReply`。投げるとバッチを残して後で送り直す。`.disabled`を返すとそのセッションを止める |
+
+### テスト
+
+`SessionsTesting`に、言われたときだけ進む時計（`FakeSessionClock`）・メモリに持つ保存先（`InMemorySessionStateStore`）・順番のid（`SequenceSessionIDs`）・受けた物を残す送り先（`RecordingSessionSink`）がある。判定は`SessionRules`のただの関数。
+
+## はじめに
 
 ```swift
 import SessionsCapture
 import SessionsCore
 import SessionsSwiftUI
+import SwiftUI
 
-let sessions = AppSessions(
-    sink: FileSessionSink(),                              // 端末に溜める
-    channel: "appstore",
-    configuration: .init(keepProps: ["memo_created": ["view"]])
-)
-let capture = SessionCapture(sessions: sessions)
-capture.start()                                           // 起動の最初に1回。セッションも始まる
+@main
+struct MyApp: App {
+    let sessions: AppSessions
+    let capture: SessionCapture
 
-// 計測の出来事を渡す（screen_viewed で画面が動く）
-analytics.onEvent { name, props in sessions.observe(name, props) }
+    init() {
+        sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")  // keep the records on the device
+        capture = SessionCapture(sessions: sessions)
+        capture.start()  // once, at launch: starts the session
+    }
 
-// 出来事の無いマーク
-sessions.mark(.ticket, ref: ticketID)
-
-// SwiftUI
-SaveButton().sessionTarget("save_button")
-NoteBody(note).sessionMask()
-CameraView().sessionNoCapture()
+    var body: some Scene {
+        WindowGroup {
+            Button("Save") {}
+                .sessionTarget("save_button")
+                .onAppear { sessions.observe("screen_viewed", ["screen": .string("home")]) }
+        }
+    }
+}
 ```
 
-## 送り先
+### appgrowstackにつなぐ
 
-`AppSessions` はバッチを `SessionSink` に渡す。
+このパッケージは単体で動き、記録は送り先が置く所に残る。appgrowstackを使うアプリは、ここでサーバーをつながない。[swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack)の対応するtrait（SwiftPMのtraits）を有効にすると、このパッケージがappgrowstackにつながる。
 
-| 送り先 | すること |
+## 入れ方
+
+`Package.swift`に足す。
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/appgrowstack/swift-app-sessions.git", .upToNextMinor(from: "0.1.0"))
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "SessionsCore", package: "swift-app-sessions"),
+            .product(name: "SessionsCapture", package: "swift-app-sessions"),
+            .product(name: "SessionsSwiftUI", package: "swift-app-sessions")
+        ]
+    )
+]
+```
+
+### プロダクト
+
+| プロダクト | 中身 |
 |---|---|
-| `FileSessionSink` | セッションごとのファイルにバッチを1行の JSON で足す。20MB を超えたら古い物から消す。テスター画面は `files()` を共有できる |
-| `DebugSessionSink` | 直近のバッチをメモリに持ち（`batches`）、文字で出す |
-| 自前の物 | `func send(_ batch: SessionBatch) async throws -> SessionSinkReply`。投げると後で送り直す。`.disabled` を返すとそのセッションを止める |
-
-バッチは `SessionBatch` の JSON（モノリポの `schema/sessions/batch.schema.json`）。
-
-## テスト
-
-`SessionsTesting` に、言われた時だけ進む時計・メモリの保存・順番の id・受けた物を残す送り先がある。
-判定はただの関数（`SessionRules`）で、`Tests/SessionsCoreTests/Cases/sessions` の共通の表を通す。
+| `SessionsCore` | セッションの区切り・判定・記録する`AppSessions`・バッチ・`SessionSink`・`FileSessionSink`・`DebugSessionSink`。FoundationとObservationだけ |
+| `SessionsCapture` | UIKit。タップ・アプリのライフサイクル・キーボード・スクロールビュー・止まり・MetricKitのクラッシュ・端末の値。UIKitの無い所では空になる |
+| `SessionsSwiftUI` | `.sessionTarget`・`.sessionScroll`・`.sessionRow`・`.sessionMask`・`.sessionNoCapture` |
+| `SessionsTesting` | テスト用のフェイク。時計・保存先・id・受けた物を残す送り先 |
 
 ## 動く環境
 
-- iOS 17 以上・macOS 14 以上（`.sessionScroll` の深さは iOS 18 から）
-- Swift 6.2 以上
+- iOS 17以上・macOS 14以上（`.sessionScroll`が深さを測るのはiOS 18から）
+- Swift 6.2以上
 
 ## ライセンス
 
-MIT
+MIT。[LICENSE](LICENSE)を見る。

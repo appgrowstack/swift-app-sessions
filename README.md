@@ -1,42 +1,37 @@
-English | [日本語](./README.ja.md)
-
 # swift-app-sessions
 
-See what people do inside your app, one session at a time: which screens they went through and how,
-where they tapped, where they tapped again and again or went straight back, how far they scrolled,
-when the app stopped answering, and how each session ended. The records stay on the device or go
-wherever you send them.
+Records what people do inside an iOS app, one session at a time: screens, taps, rage taps, quick backs, scroll depth, hangs and how each session ended.
 
-![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)
-![Platforms](https://img.shields.io/badge/Platforms-iOS%2017%20%7C%20macOS%2014-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-> Developed in a private monorepo and copied here one way. Issues are welcome; pull requests are
-> not accepted.
+English | [Japanese](README.ja.md)
 
 ## Features
 
-- **Sessions split the usual way.** A launch starts one; so does coming back after 30 minutes in
-  the background. Each has an id (`ses_` and 20 letters)
-- **Screens from your analytics.** `screen_viewed` moves to its screen. Going back to the screen
-  under the current one is a `pop`, with `back` and, within 2 seconds of entering, `quick_back`
-- **Taps without touching your touches.** A recognizer on every window that never recognizes
-  anything. Positions are 0–10000 of the window (iPad split windows included). `.sessionTarget("…")`
-  names an element
+- **Sessions split the usual way.** A launch starts one, and so does coming back after 30 minutes in the background. Each has an id (`ses_` and 20 letters)
+- **Screens from your analytics events.** `screen_viewed` moves to its screen. Going back to the screen under the current one is a `pop`, recorded with `back` and, within 2 seconds of entering, `quick_back`
+- **Taps without touching your touches.** A recognizer on every window that never recognizes anything. Positions are 0–10000 of the window (iPad split windows included). `.sessionTarget("…")` names an element
 - **Rage taps.** Three or more taps within 1 second and 30 pt of the first
-- **Scroll depth.** The main scroll view's deepest point per screen, and named lists with
-  `.sessionScroll("…")` and `.sessionRow(_:in:)`
-- **How it ended.** `background_timeout`, `crashed` (MetricKit, also when the report comes late),
-  `hung` (a watchdog thread; a session killed in a hang still ends as hung), `killed` or `unknown`,
-  decided at the next launch
-- **Your app's events, kept carefully.** The shared catalog's values are kept; your own events keep
-  only the properties you list. Text longer than 48 characters is dropped
-- **Survives restarts and no network.** What is not sent yet is kept and sent later with the same
-  batch number, so the receiver can drop duplicates
-- **No dependencies.** Foundation, Observation, UIKit, MetricKit; SwiftUI only in `SessionsSwiftUI`
+- **Scroll depth.** The main scroll view's deepest point per screen, and named lists with `.sessionScroll("…")` and `.sessionRow(_:in:)`
+- **How it ended.** `background_timeout`, `crashed` (MetricKit, also when the report comes late), `hung` (a watchdog thread), `killed` or `unknown`, decided at the next launch
+- **Your app's events, kept carefully.** Events of the shared catalog keep their values; your own events keep only the properties you list in `keepProps`. Text longer than 48 characters is dropped
+- **Survives restarts and no network.** What is not sent yet is kept and sent later with the same batch number, so the receiver can drop duplicates
+- **Marks.** Some events (`paywall_shown`, `purchase_completed`, `campaign_shown` and others) also make a mark, and `mark(_:ref:side:)` adds one without an event
+- **No dependencies.** Foundation, Observation, UIKit and MetricKit; SwiftUI only in `SessionsSwiftUI`
 
-The light record keeps no pixels. `.sessionMask()` and `.sessionNoCapture()` place their marks now
-for the recording, which is not part of this version.
+The light record keeps no pixels. `.sessionMask()` and `.sessionNoCapture()` only place marks.
+
+### Where the records go
+
+`AppSessions` hands each batch to a `SessionSink`:
+
+| Sink | What it does |
+|---|---|
+| `FileSessionSink` | One JSON line per batch in a file per session, oldest removed past 20 MB. `files()` for a tester screen to share |
+| `DebugSessionSink` | The last batches in memory (`batches`), each also printed |
+| your own | `func send(_ batch: SessionBatch) async throws -> SessionSinkReply`. Throw to keep the batch for later; answer `.disabled` to stop the session |
+
+### Testing
+
+`SessionsTesting` has a clock that moves only when told (`FakeSessionClock`), an in-memory state store (`InMemorySessionStateStore`), ids in order (`SequenceSessionIDs`) and a recording sink (`RecordingSessionSink`). The rules are plain functions in `SessionRules`.
 
 ## Quick Start
 
@@ -44,44 +39,61 @@ for the recording, which is not part of this version.
 import SessionsCapture
 import SessionsCore
 import SessionsSwiftUI
+import SwiftUI
 
-let sessions = AppSessions(
-    sink: FileSessionSink(),                              // keep on the device
-    channel: "appstore",
-    configuration: .init(keepProps: ["memo_created": ["view"]])
-)
-let capture = SessionCapture(sessions: sessions)
-capture.start()                                           // once, at launch: starts the session
+@main
+struct MyApp: App {
+    let sessions: AppSessions
+    let capture: SessionCapture
 
-// Hand your analytics events over (screen_viewed moves the screen)
-analytics.onEvent { name, props in sessions.observe(name, props) }
+    init() {
+        sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")  // keep the records on the device
+        capture = SessionCapture(sessions: sessions)
+        capture.start()  // once, at launch: starts the session
+    }
 
-// Mark what you know without an event
-sessions.mark(.ticket, ref: ticketID)
-
-// In SwiftUI
-SaveButton().sessionTarget("save_button")
-NoteBody(note).sessionMask()
-CameraView().sessionNoCapture()
+    var body: some Scene {
+        WindowGroup {
+            Button("Save") {}
+                .sessionTarget("save_button")
+                .onAppear { sessions.observe("screen_viewed", ["screen": .string("home")]) }
+        }
+    }
+}
 ```
 
-## Where the records go
+### Connecting to appgrowstack
 
-`AppSessions` hands each batch to a `SessionSink`:
+This package works on its own and keeps the records wherever its sink puts them. Apps that use appgrowstack do not wire the server here: enable the matching trait of [swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack) (SwiftPM traits), which connects this package to it.
 
-| Sink | What it does |
+## Installation
+
+Add the package to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/appgrowstack/swift-app-sessions.git", .upToNextMinor(from: "0.1.0"))
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "SessionsCore", package: "swift-app-sessions"),
+            .product(name: "SessionsCapture", package: "swift-app-sessions"),
+            .product(name: "SessionsSwiftUI", package: "swift-app-sessions")
+        ]
+    )
+]
+```
+
+### Products
+
+| Product | What it has |
 |---|---|
-| `FileSessionSink` | One JSON line per batch in a file per session, oldest removed past 20 MB. `files()` for a tester screen to share |
-| `DebugSessionSink` | The last batches in memory (`batches`) and printed |
-| your own | `func send(_ batch: SessionBatch) async throws -> SessionSinkReply`. Throw to keep the batch for later; answer `.disabled` to stop the session |
-
-The batch is the JSON of `SessionBatch` (`schema/sessions/batch.schema.json` in the monorepo).
-
-## Testing
-
-`SessionsTesting` has a clock that moves only when told, an in-memory state store, ids in order and
-a recording sink. The rules are plain functions (`SessionRules`) and pass the shared tables in
-`Tests/SessionsCoreTests/Cases/sessions`.
+| `SessionsCore` | Splitting sessions, the rules, the recorder `AppSessions`, batches, `SessionSink`, `FileSessionSink` and `DebugSessionSink`. Foundation and Observation only |
+| `SessionsCapture` | UIKit: taps, the app's lifecycle, the keyboard, scroll views, hangs, MetricKit crashes and the device's values. Compiles to nothing outside UIKit |
+| `SessionsSwiftUI` | `.sessionTarget`, `.sessionScroll`, `.sessionRow`, `.sessionMask` and `.sessionNoCapture` |
+| `SessionsTesting` | Test doubles: a clock, a state store, ids and a recording sink |
 
 ## Requirements
 
@@ -90,4 +102,4 @@ a recording sink. The rules are plain functions (`SessionRules`) and pass the sh
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
