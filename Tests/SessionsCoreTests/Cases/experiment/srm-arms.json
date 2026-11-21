@@ -1,0 +1,143 @@
+{
+  "description": "案の数に広げた割り当てのずれ（SRM）。2案は srm と同じ。3案から30人以上でカイ二乗（自由度は案の数 − 1）。p は小数6桁で丸めて比べる",
+  "vectors": [
+    {
+      "description": "2案・29人は数えない",
+      "input": {
+        "counts": [
+          15,
+          14
+        ],
+        "weights": [
+          50,
+          50
+        ]
+      },
+      "expect": {
+        "p": null,
+        "counted": false,
+        "method": "none"
+      }
+    },
+    {
+      "description": "2案・40人は二項の正確な検定",
+      "input": {
+        "counts": [
+          12,
+          28
+        ],
+        "weights": [
+          50,
+          50
+        ]
+      },
+      "expect": {
+        "p": 0.016589,
+        "counted": true,
+        "method": "binomial_exact"
+      }
+    },
+    {
+      "description": "2案・重み 90:10・250人はカイ二乗",
+      "input": {
+        "counts": [
+          230,
+          20
+        ],
+        "weights": [
+          90,
+          10
+        ]
+      },
+      "expect": {
+        "p": 0.291841,
+        "counted": true,
+        "method": "chi_square"
+      }
+    },
+    {
+      "description": "3案・30人からカイ二乗（自由度2）",
+      "input": {
+        "counts": [
+          10,
+          11,
+          9
+        ],
+        "weights": [
+          1,
+          1,
+          1
+        ]
+      },
+      "expect": {
+        "p": 0.904837,
+        "counted": true,
+        "method": "chi_square"
+      }
+    },
+    {
+      "description": "3案・偏っている",
+      "input": {
+        "counts": [
+          100,
+          60,
+          140
+        ],
+        "weights": [
+          1,
+          1,
+          1
+        ]
+      },
+      "expect": {
+        "p": 0.0,
+        "counted": true,
+        "method": "chi_square"
+      }
+    },
+    {
+      "description": "4案・重み 1:2:3:4（自由度3）",
+      "input": {
+        "counts": [
+          40,
+          80,
+          130,
+          150
+        ],
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expect": {
+        "p": 0.69192,
+        "counted": true,
+        "method": "chi_square"
+      }
+    },
+    {
+      "description": "4案・29人は数えない",
+      "input": {
+        "counts": [
+          5,
+          6,
+          9,
+          9
+        ],
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expect": {
+        "p": null,
+        "counted": false,
+        "method": "none"
+      }
+    }
+  ]
+}

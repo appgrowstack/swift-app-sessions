@@ -1,0 +1,78 @@
+{
+  "description": "アプリが渡さなかった値は exists false に当たり、ほかの演算子には当たらない",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "show_trial_badge": {
+        "type": "bool",
+        "default": false,
+        "rules": [
+          {
+            "when": {
+              "fact": "is_premium",
+              "exists": false
+            },
+            "value": true
+          }
+        ]
+      },
+      "trial_days": {
+        "type": "int",
+        "default": 7,
+        "rules": [
+          {
+            "when": {
+              "fact": "is_premium",
+              "ne": true
+            },
+            "value": 3
+          }
+        ]
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "show_trial_badge",
+      "type": "bool",
+      "fallback": false
+    },
+    {
+      "key": "trial_days",
+      "type": "int",
+      "fallback": 0
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "show_trial_badge",
+        "value": true,
+        "source": "rule",
+        "variant": null
+      },
+      {
+        "key": "trial_days",
+        "value": 7,
+        "source": "default",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}

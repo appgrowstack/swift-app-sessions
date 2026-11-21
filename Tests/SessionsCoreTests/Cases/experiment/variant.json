@@ -1,0 +1,397 @@
+{
+  "description": "R3 の案の割り当て（R9 の実験）。key は hash32 に入れる文字列。h × 重みの和 < 累積の重み × 2^32 になる最初の案。unit は小数6桁で丸めて比べる（見るためだけ）",
+  "vectors": [
+    {
+      "description": "2案 50:50（人 1）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-1",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-1:paywall-hard-vs-soft:variant",
+      "hash32": 2883473996,
+      "expect": {
+        "unit": 0.671361,
+        "index": 1
+      }
+    },
+    {
+      "description": "2案 50:50（人 2）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-2",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-2:paywall-hard-vs-soft:variant",
+      "hash32": 4118058418,
+      "expect": {
+        "unit": 0.95881,
+        "index": 1
+      }
+    },
+    {
+      "description": "2案 50:50（人 3）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-3",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-3:paywall-hard-vs-soft:variant",
+      "hash32": 2923314751,
+      "expect": {
+        "unit": 0.680637,
+        "index": 1
+      }
+    },
+    {
+      "description": "2案 50:50（人 4）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-4",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-4:paywall-hard-vs-soft:variant",
+      "hash32": 1859160452,
+      "expect": {
+        "unit": 0.43287,
+        "index": 0
+      }
+    },
+    {
+      "description": "2案 50:50（人 5）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-5",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-5:paywall-hard-vs-soft:variant",
+      "hash32": 1200934789,
+      "expect": {
+        "unit": 0.279614,
+        "index": 0
+      }
+    },
+    {
+      "description": "2案 50:50（人 6）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-6",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-6:paywall-hard-vs-soft:variant",
+      "hash32": 2923907452,
+      "expect": {
+        "unit": 0.680775,
+        "index": 1
+      }
+    },
+    {
+      "description": "本人の端末は最初の案",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-2",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": true
+      },
+      "key": "reading-memory:inst-2:paywall-hard-vs-soft:variant",
+      "hash32": 4118058418,
+      "expect": {
+        "unit": 0.95881,
+        "index": 0
+      }
+    },
+    {
+      "description": "3案 1:1:1（人 1）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-1",
+        "experiment": "onboarding-order",
+        "weights": [
+          1,
+          1,
+          1
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-1:onboarding-order:variant",
+      "hash32": 3209627668,
+      "expect": {
+        "unit": 0.7473,
+        "index": 2
+      }
+    },
+    {
+      "description": "3案 1:1:1（人 2）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-2",
+        "experiment": "onboarding-order",
+        "weights": [
+          1,
+          1,
+          1
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-2:onboarding-order:variant",
+      "hash32": 2152892576,
+      "expect": {
+        "unit": 0.501259,
+        "index": 1
+      }
+    },
+    {
+      "description": "3案 1:1:1（人 3）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-3",
+        "experiment": "onboarding-order",
+        "weights": [
+          1,
+          1,
+          1
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-3:onboarding-order:variant",
+      "hash32": 2609097580,
+      "expect": {
+        "unit": 0.607478,
+        "index": 1
+      }
+    },
+    {
+      "description": "3案 1:1:1（人 4）",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "inst-4",
+        "experiment": "onboarding-order",
+        "weights": [
+          1,
+          1,
+          1
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:inst-4:onboarding-order:variant",
+      "hash32": 3536937773,
+      "expect": {
+        "unit": 0.823507,
+        "index": 2
+      }
+    },
+    {
+      "description": "90:10 で新しい値を少しだけ（人 1）",
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-1",
+        "experiment": "new-home-rollout",
+        "weights": [
+          90,
+          10
+        ],
+        "internal": false
+      },
+      "key": "gamification-app:user-1:new-home-rollout:variant",
+      "hash32": 4086207039,
+      "expect": {
+        "unit": 0.951394,
+        "index": 1
+      }
+    },
+    {
+      "description": "90:10 で新しい値を少しだけ（人 2）",
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-2",
+        "experiment": "new-home-rollout",
+        "weights": [
+          90,
+          10
+        ],
+        "internal": false
+      },
+      "key": "gamification-app:user-2:new-home-rollout:variant",
+      "hash32": 3558755880,
+      "expect": {
+        "unit": 0.828587,
+        "index": 0
+      }
+    },
+    {
+      "description": "90:10 で新しい値を少しだけ（人 3）",
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-3",
+        "experiment": "new-home-rollout",
+        "weights": [
+          90,
+          10
+        ],
+        "internal": false
+      },
+      "key": "gamification-app:user-3:new-home-rollout:variant",
+      "hash32": 1269026675,
+      "expect": {
+        "unit": 0.295468,
+        "index": 0
+      }
+    },
+    {
+      "description": "90:10 で新しい値を少しだけ（人 4）",
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-4",
+        "experiment": "new-home-rollout",
+        "weights": [
+          90,
+          10
+        ],
+        "internal": false
+      },
+      "key": "gamification-app:user-4:new-home-rollout:variant",
+      "hash32": 946673687,
+      "expect": {
+        "unit": 0.220415,
+        "index": 0
+      }
+    },
+    {
+      "description": "4案 1:2:3:4（人 1）",
+      "input": {
+        "project": "stock-radar",
+        "person_id": "p-1",
+        "experiment": "plans-order",
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "internal": false
+      },
+      "key": "stock-radar:p-1:plans-order:variant",
+      "hash32": 3505215296,
+      "expect": {
+        "unit": 0.816122,
+        "index": 3
+      }
+    },
+    {
+      "description": "4案 1:2:3:4（人 2）",
+      "input": {
+        "project": "stock-radar",
+        "person_id": "p-2",
+        "experiment": "plans-order",
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "internal": false
+      },
+      "key": "stock-radar:p-2:plans-order:variant",
+      "hash32": 4289784593,
+      "expect": {
+        "unit": 0.998793,
+        "index": 3
+      }
+    },
+    {
+      "description": "4案 1:2:3:4（人 3）",
+      "input": {
+        "project": "stock-radar",
+        "person_id": "p-3",
+        "experiment": "plans-order",
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "internal": false
+      },
+      "key": "stock-radar:p-3:plans-order:variant",
+      "hash32": 3986228662,
+      "expect": {
+        "unit": 0.928116,
+        "index": 3
+      }
+    },
+    {
+      "description": "4案 1:2:3:4（人 4）",
+      "input": {
+        "project": "stock-radar",
+        "person_id": "p-4",
+        "experiment": "plans-order",
+        "weights": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "internal": false
+      },
+      "key": "stock-radar:p-4:plans-order:variant",
+      "hash32": 372640672,
+      "expect": {
+        "unit": 0.086762,
+        "index": 0
+      }
+    },
+    {
+      "description": "日本語の person_id も UTF-16 の符号で数える",
+      "input": {
+        "project": "reading-memory",
+        "person_id": "読者-1",
+        "experiment": "paywall-hard-vs-soft",
+        "weights": [
+          50,
+          50
+        ],
+        "internal": false
+      },
+      "key": "reading-memory:読者-1:paywall-hard-vs-soft:variant",
+      "hash32": 1716459801,
+      "expect": {
+        "unit": 0.399644,
+        "index": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "description": "型の違う比べ（数の値に文字列）は当たらない",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "onboarding_short": {
+        "type": "bool",
+        "default": false,
+        "rules": [
+          {
+            "when": {
+              "fact": "days_since_first_seen",
+              "eq": "3"
+            },
+            "value": true
+          }
+        ]
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "onboarding_short",
+      "type": "bool",
+      "fallback": false
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "onboarding_short",
+        "value": false,
+        "source": "default",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}

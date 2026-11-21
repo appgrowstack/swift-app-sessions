@@ -1,0 +1,66 @@
+{
+  "description": "starts_at より前は default。config_exposed を記録しない",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "paywall_hard": {
+        "type": "bool",
+        "default": false,
+        "experiment": {
+          "id": "paywall-hard-vs-soft",
+          "variants": [
+            {
+              "name": "soft",
+              "weight": 50,
+              "value": false
+            },
+            {
+              "name": "hard",
+              "weight": 50,
+              "value": true
+            }
+          ],
+          "metric": {
+            "event": "purchase_completed",
+            "within_hours": 168
+          },
+          "starts_at": "2026-12-01T00:00:00+09:00",
+          "ends_at": "2027-01-01T00:00:00+09:00"
+        }
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-4",
+  "internal": false,
+  "now": "2026-11-30T23:59:59+09:00",
+  "reads": [
+    {
+      "key": "paywall_hard",
+      "type": "bool",
+      "fallback": true
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "paywall_hard",
+        "value": false,
+        "source": "default",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}

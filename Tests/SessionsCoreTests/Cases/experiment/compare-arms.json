@@ -1,0 +1,183 @@
+{
+  "description": "R3 の案ごとの差。2つめからの案ごとに、最初の案を holdout として compare を当てる。数は小数6桁で丸めて比べる",
+  "vectors": [
+    {
+      "description": "2案。2つめが上",
+      "input": {
+        "arms": [
+          {
+            "eligible": 120,
+            "reached": 12
+          },
+          {
+            "eligible": 118,
+            "reached": 21
+          }
+        ],
+        "min_per_arm": 30
+      },
+      "expect": [
+        {
+          "status": "compared",
+          "treatment_rate": 0.177966,
+          "holdout_rate": 0.1,
+          "diff": 0.077966,
+          "low": -0.009464,
+          "high": 0.165396
+        }
+      ]
+    },
+    {
+      "description": "3案。2つめは上・3つめは下",
+      "input": {
+        "arms": [
+          {
+            "eligible": 200,
+            "reached": 30
+          },
+          {
+            "eligible": 210,
+            "reached": 42
+          },
+          {
+            "eligible": 190,
+            "reached": 19
+          }
+        ],
+        "min_per_arm": 30
+      },
+      "expect": [
+        {
+          "status": "compared",
+          "treatment_rate": 0.2,
+          "holdout_rate": 0.15,
+          "diff": 0.05,
+          "low": -0.023321,
+          "high": 0.123321
+        },
+        {
+          "status": "compared",
+          "treatment_rate": 0.1,
+          "holdout_rate": 0.15,
+          "diff": -0.05,
+          "low": -0.115335,
+          "high": 0.015335
+        }
+      ]
+    },
+    {
+      "description": "4案。3つめが29人で足りない",
+      "input": {
+        "arms": [
+          {
+            "eligible": 60,
+            "reached": 6
+          },
+          {
+            "eligible": 61,
+            "reached": 9
+          },
+          {
+            "eligible": 29,
+            "reached": 3
+          },
+          {
+            "eligible": 58,
+            "reached": 5
+          }
+        ],
+        "min_per_arm": 30
+      },
+      "expect": [
+        {
+          "status": "compared",
+          "treatment_rate": 0.147541,
+          "holdout_rate": 0.1,
+          "diff": 0.047541,
+          "low": -0.069434,
+          "high": 0.164516
+        },
+        {
+          "status": "too_few",
+          "treatment_rate": 0.103448,
+          "holdout_rate": 0.1,
+          "diff": null,
+          "low": null,
+          "high": null
+        },
+        {
+          "status": "compared",
+          "treatment_rate": 0.086207,
+          "holdout_rate": 0.1,
+          "diff": -0.013793,
+          "low": -0.118579,
+          "high": 0.090993
+        }
+      ]
+    },
+    {
+      "description": "最初の案が29人なら全部 too_few",
+      "input": {
+        "arms": [
+          {
+            "eligible": 29,
+            "reached": 2
+          },
+          {
+            "eligible": 80,
+            "reached": 8
+          },
+          {
+            "eligible": 81,
+            "reached": 4
+          }
+        ],
+        "min_per_arm": 30
+      },
+      "expect": [
+        {
+          "status": "too_few",
+          "treatment_rate": 0.1,
+          "holdout_rate": 0.068966,
+          "diff": null,
+          "low": null,
+          "high": null
+        },
+        {
+          "status": "too_few",
+          "treatment_rate": 0.049383,
+          "holdout_rate": 0.068966,
+          "diff": null,
+          "low": null,
+          "high": null
+        }
+      ]
+    },
+    {
+      "description": "最初の案が0人",
+      "input": {
+        "arms": [
+          {
+            "eligible": 0,
+            "reached": 0
+          },
+          {
+            "eligible": 40,
+            "reached": 4
+          }
+        ],
+        "min_per_arm": 30
+      },
+      "expect": [
+        {
+          "status": "too_few",
+          "treatment_rate": 0.1,
+          "holdout_rate": null,
+          "diff": null,
+          "low": null,
+          "high": null
+        }
+      ]
+    }
+  ]
+}

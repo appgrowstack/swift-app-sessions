@@ -1,0 +1,81 @@
+{
+  "description": "all と any の入れ子",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "paywall_bullets": {
+        "type": "json",
+        "default": [
+          "無制限の本棚"
+        ],
+        "rules": [
+          {
+            "when": {
+              "all": [
+                {
+                  "fact": "platform",
+                  "in": [
+                    "ios",
+                    "android"
+                  ]
+                },
+                {
+                  "any": [
+                    {
+                      "fact": "region",
+                      "eq": "US"
+                    },
+                    {
+                      "fact": "days_since_first_seen",
+                      "gte": 3
+                    }
+                  ]
+                }
+              ]
+            },
+            "value": [
+              "無制限の本棚",
+              "メモの書き出し"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "paywall_bullets",
+      "type": "json",
+      "fallback": []
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "paywall_bullets",
+        "value": [
+          "無制限の本棚",
+          "メモの書き出し"
+        ],
+        "source": "rule",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}

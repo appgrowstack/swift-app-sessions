@@ -1,0 +1,101 @@
+{
+  "description": "3案の json の値",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "onboarding_pages": {
+        "type": "json",
+        "default": [
+          "welcome",
+          "goal",
+          "shelf"
+        ],
+        "experiment": {
+          "id": "onboarding-order",
+          "variants": [
+            {
+              "name": "now",
+              "weight": 1,
+              "value": [
+                "welcome",
+                "goal",
+                "shelf"
+              ]
+            },
+            {
+              "name": "shelf_first",
+              "weight": 1,
+              "value": [
+                "shelf",
+                "welcome",
+                "goal"
+              ]
+            },
+            {
+              "name": "short",
+              "weight": 1,
+              "value": [
+                "welcome",
+                "shelf"
+              ]
+            }
+          ],
+          "metric": {
+            "event": "onboarding_completed",
+            "within_hours": 24
+          },
+          "starts_at": "2026-12-01T00:00:00Z",
+          "ends_at": null
+        }
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "onboarding_pages",
+      "type": "json",
+      "fallback": [
+        "welcome"
+      ]
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "onboarding_pages",
+        "value": [
+          "welcome",
+          "shelf"
+        ],
+        "source": "experiment",
+        "variant": "short"
+      }
+    ],
+    "records": [
+      {
+        "name": "config_exposed",
+        "params": {
+          "key": "onboarding_pages",
+          "experiment": "onboarding-order",
+          "variant": "short",
+          "set_version": 7
+        }
+      }
+    ]
+  }
+}

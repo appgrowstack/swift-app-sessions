@@ -1,0 +1,45 @@
+{
+  "description": "組に無い key はアプリの既定",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "paywall_headline": {
+        "type": "string",
+        "default": "読書をもっと記録に"
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "show_streak",
+      "type": "bool",
+      "fallback": true
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "show_streak",
+        "value": true,
+        "source": "fallback",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}
