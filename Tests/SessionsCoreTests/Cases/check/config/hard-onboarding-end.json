@@ -1,0 +1,82 @@
+{
+  "description": "オンボーディングの最後なら hard でよい",
+  "manifest": {
+    "project": "reading-memory",
+    "flags": {
+      "paywall": {
+        "type": "json",
+        "description": "オンボーディングの最後のペイウォール",
+        "template": "paywall"
+      },
+      "settings_paywall": {
+        "type": "json",
+        "description": "設定から開くペイウォール",
+        "template": "paywall"
+      },
+      "onboarding": {
+        "type": "json",
+        "description": "オンボーディングの枚",
+        "template": "onboarding"
+      },
+      "show_streak": {
+        "type": "bool",
+        "description": "連続の日数を出す"
+      }
+    },
+    "facts": {},
+    "paywall": {
+      "offerings": {
+        "default": {
+          "products": [
+            "rm_yearly",
+            "rm_monthly"
+          ]
+        },
+        "trial_7d": {
+          "products": [
+            "rm_yearly_trial"
+          ]
+        }
+      },
+      "features": [
+        "unlimited_books",
+        "export_notes",
+        "reading_stats"
+      ]
+    },
+    "onboarding": {
+      "pages": [
+        "welcome",
+        "goal",
+        "shelf",
+        "notify"
+      ]
+    }
+  },
+  "flags": {
+    "paywall": {
+      "type": "json",
+      "default": {
+        "offering": "default",
+        "plans_order": [
+          "rm_yearly",
+          "rm_monthly"
+        ],
+        "default_plan": "rm_yearly",
+        "headline": {
+          "ja": "読んだ本を全部残す",
+          "en": "Keep every book you read"
+        },
+        "bullets": [
+          "unlimited_books",
+          "export_notes"
+        ],
+        "show_at": "onboarding_end",
+        "hard": true
+      }
+    }
+  },
+  "expect": {
+    "errors": []
+  }
+}

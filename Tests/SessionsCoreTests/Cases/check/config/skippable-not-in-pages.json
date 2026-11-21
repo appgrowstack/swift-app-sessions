@@ -1,0 +1,77 @@
+{
+  "description": "飛ばせる枚が並びに無い",
+  "manifest": {
+    "project": "reading-memory",
+    "flags": {
+      "paywall": {
+        "type": "json",
+        "description": "オンボーディングの最後のペイウォール",
+        "template": "paywall"
+      },
+      "settings_paywall": {
+        "type": "json",
+        "description": "設定から開くペイウォール",
+        "template": "paywall"
+      },
+      "onboarding": {
+        "type": "json",
+        "description": "オンボーディングの枚",
+        "template": "onboarding"
+      },
+      "show_streak": {
+        "type": "bool",
+        "description": "連続の日数を出す"
+      }
+    },
+    "facts": {},
+    "paywall": {
+      "offerings": {
+        "default": {
+          "products": [
+            "rm_yearly",
+            "rm_monthly"
+          ]
+        },
+        "trial_7d": {
+          "products": [
+            "rm_yearly_trial"
+          ]
+        }
+      },
+      "features": [
+        "unlimited_books",
+        "export_notes",
+        "reading_stats"
+      ]
+    },
+    "onboarding": {
+      "pages": [
+        "welcome",
+        "goal",
+        "shelf",
+        "notify"
+      ]
+    }
+  },
+  "flags": {
+    "onboarding": {
+      "type": "json",
+      "default": {
+        "pages": [
+          "welcome",
+          "goal",
+          "shelf"
+        ],
+        "skippable": [
+          "notify"
+        ],
+        "paywall_at_end": true
+      }
+    }
+  },
+  "expect": {
+    "errors": [
+      "onboarding.skippable_subset"
+    ]
+  }
+}
