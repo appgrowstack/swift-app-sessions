@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-22
+
+### Fixed
+
+- NaN and infinite property values are dropped. Kept, they stopped every later save of the state and
+  every send of a batch.
+
 ## [0.1.0] - 2026-11-21
 
 ### Added
