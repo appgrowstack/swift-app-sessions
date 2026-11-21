@@ -1,0 +1,31 @@
+{
+  "description": "ライブを見るのはエージェントにはできない（ai が no）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "sessions.live.watch"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "sessions.live.watch",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

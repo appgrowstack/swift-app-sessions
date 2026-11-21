@@ -1,0 +1,33 @@
+{
+  "description": "Managed Agents には段階2を付けない（役割を editor にしても local_only で断る）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_analyst000000001",
+    "agent_location": "managed",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "people.person.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "people.person.read",
+    "project": "reading-memory"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "description": "admin は監査を読める",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_admin00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "admin",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "audit.read",
+    "project": null
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

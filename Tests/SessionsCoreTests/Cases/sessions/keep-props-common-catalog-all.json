@@ -1,0 +1,28 @@
+{
+  "rule": "keep_props",
+  "description": "swift-analytics の共通のカタログの出来事＝props を全部残す",
+  "input": {
+    "source": "common",
+    "name": "screen_viewed",
+    "props": {
+      "screen": "book_detail",
+      "previous": "bookshelf"
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "screen": "book_detail",
+      "previous": "bookshelf"
+    },
+    "props_dropped": false
+  }
+}

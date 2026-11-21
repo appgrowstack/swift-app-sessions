@@ -1,0 +1,21 @@
+{
+  "rule": "scroll",
+  "description": "上の端の跳ね返り（offset が負）と下の端を越えた跳ね返り＝0〜10000 に収める",
+  "input": {
+    "samples": [
+      {
+        "offset_y": -60,
+        "height": 800,
+        "content_height": 3000
+      },
+      {
+        "offset_y": 2260,
+        "height": 800,
+        "content_height": 3000
+      }
+    ]
+  },
+  "expect": {
+    "max_ratio": 10000
+  }
+}

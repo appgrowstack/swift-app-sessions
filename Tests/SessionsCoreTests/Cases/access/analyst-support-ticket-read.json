@@ -1,0 +1,33 @@
+{
+  "description": "Managed Agents は段階3を読めない（support の役割でも）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_analyst000000001",
+    "agent_location": "managed",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "support.ticket.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "reading-memory"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

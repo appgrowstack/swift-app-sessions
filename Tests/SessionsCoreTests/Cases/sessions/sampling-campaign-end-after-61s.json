@@ -1,0 +1,59 @@
+{
+  "rule": "sampling",
+  "description": "campaign_shown の後61秒で終わった＝優先にならない",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "mark",
+        "t": 100000,
+        "kind": "campaign_shown",
+        "ref": "trial-2nd",
+        "side": "treatment"
+      },
+      {
+        "k": "background",
+        "t": 161000
+      },
+      {
+        "k": "end",
+        "t": 161000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "none",
+    "priority": [],
+    "previous_session_upload": false,
+    "session_replay": "buffer"
+  }
+}

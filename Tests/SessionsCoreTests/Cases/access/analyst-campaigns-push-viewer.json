@@ -1,0 +1,33 @@
+{
+  "description": "viewer のエージェントは push の依頼もできない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_analyst000000001",
+    "agent_location": "managed",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "viewer",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.push"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "campaigns.push",
+    "project": "reading-memory"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

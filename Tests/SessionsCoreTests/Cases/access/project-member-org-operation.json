@@ -1,0 +1,24 @@
+{
+  "description": "プロジェクトの所属だけでは、プロジェクトにつかない操作（承認の依頼の一覧）の役割にならない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_viewer0000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "viewer",
+        "project": "reading-memory"
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.read",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

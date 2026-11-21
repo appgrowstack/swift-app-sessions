@@ -1,0 +1,33 @@
+{
+  "description": "holdout の割り当ての hash32（notify の src/shared/hash.ts と同じ式）。入力は UTF-16 の符号で数える",
+  "vectors": [
+    {
+      "input": "",
+      "hash32": 2872998923
+    },
+    {
+      "input": "a",
+      "hash32": 444641715
+    },
+    {
+      "input": "日本語:ü",
+      "hash32": 280147884
+    },
+    {
+      "input": "gamification-app:user-1:trial-2days-after-feature:holdout",
+      "hash32": 722968597
+    },
+    {
+      "input": "gamification-app:user-6:trial-2days-after-feature:holdout",
+      "hash32": 3398128880
+    },
+    {
+      "input": "gamification-app:user-8:aaa-offer:holdout",
+      "hash32": 740715927
+    },
+    {
+      "input": "gamification-app:uid_AbC123:aaa-offer:holdout",
+      "hash32": 685744023
+    }
+  ]
+}

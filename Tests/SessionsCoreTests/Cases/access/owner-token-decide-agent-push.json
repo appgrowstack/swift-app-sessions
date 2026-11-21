@@ -1,0 +1,35 @@
+{
+  "description": "owner の ut_（CLI の approve）でも承認できる。scope に決める操作と依頼の操作の両方が要る",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "access.approval.decide",
+        "campaigns.push"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "campaigns.push",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

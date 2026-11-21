@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "フラグが残っていて REASON_LOW_MEMORY＝killed",
+  "input": {
+    "platform": "android",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "scroll",
+    "exit_reason": "REASON_LOW_MEMORY"
+  },
+  "expect": {
+    "reason": "killed"
+  }
+}

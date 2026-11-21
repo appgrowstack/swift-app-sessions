@@ -1,0 +1,32 @@
+{
+  "description": "プロジェクトを reading-memory に絞った ut_ で gamification-app は 403 scope_missing",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "campaigns.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

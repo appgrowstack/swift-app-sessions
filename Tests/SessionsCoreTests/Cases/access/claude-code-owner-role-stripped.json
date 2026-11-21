@@ -1,0 +1,31 @@
+{
+  "description": "エージェントに owner を付けても外すので、登録の変更の依頼もできない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "registry.project.update"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "registry.project.update",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

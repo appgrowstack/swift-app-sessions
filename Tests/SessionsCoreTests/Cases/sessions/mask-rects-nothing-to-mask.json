@@ -1,0 +1,16 @@
+{
+  "rule": "mask_rects",
+  "description": "隠す物が無い＝そのまま撮る",
+  "input": {
+    "scale": 3,
+    "image": {
+      "w": 1179,
+      "h": 2556
+    },
+    "rects": []
+  },
+  "expect": {
+    "drop": false,
+    "rects": []
+  }
+}

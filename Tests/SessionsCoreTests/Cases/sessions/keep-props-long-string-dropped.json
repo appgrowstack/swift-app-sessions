@@ -1,0 +1,27 @@
+{
+  "rule": "keep_props",
+  "description": "残す名前の値が49文字＝値ごと捨てて props_dropped true",
+  "input": {
+    "source": "app",
+    "name": "note_view_changed",
+    "props": {
+      "from": "board",
+      "to": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "from": "board"
+    },
+    "props_dropped": true
+  }
+}

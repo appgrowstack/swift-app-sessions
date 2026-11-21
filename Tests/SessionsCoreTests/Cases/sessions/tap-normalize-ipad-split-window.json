@@ -1,0 +1,24 @@
+{
+  "rule": "tap_normalize",
+  "description": "iPad の横向き（1366×1024）を半分に分けた右の窓（x 688・幅 678）。窓の中の位置にしてから割る。窓は縦長なので portrait",
+  "input": {
+    "tap": {
+      "x": 1027,
+      "y": 512
+    },
+    "window": {
+      "x": 688,
+      "y": 0,
+      "w": 678,
+      "h": 1024
+    }
+  },
+  "expect": {
+    "x": 5000,
+    "y": 5000,
+    "orientation": "portrait",
+    "col": 20,
+    "row": 40,
+    "cell": 1620
+  }
+}

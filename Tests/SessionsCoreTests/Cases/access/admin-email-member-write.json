@@ -1,0 +1,24 @@
+{
+  "description": "admin は人と役割を触らない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_admin00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "admin",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.member.write",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

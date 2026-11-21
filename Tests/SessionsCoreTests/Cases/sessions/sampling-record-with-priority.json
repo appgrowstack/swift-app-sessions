@@ -1,0 +1,58 @@
+{
+  "rule": "sampling",
+  "description": "4 で全部送るセッションに rage があっても全部送るまま（session_replay は record）。当たった条件は priority に書く",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_E1f2G3h4I5j6K7l8M9n0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "rage",
+        "t": 5000,
+        "x": 5000,
+        "y": 5000,
+        "count": 3,
+        "screen": "bookshelf"
+      },
+      {
+        "k": "end",
+        "t": 60000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "record",
+    "capture": true,
+    "hash": 58897890,
+    "upload": "all",
+    "priority": [
+      "rage"
+    ],
+    "previous_session_upload": false,
+    "session_replay": "record"
+  }
+}

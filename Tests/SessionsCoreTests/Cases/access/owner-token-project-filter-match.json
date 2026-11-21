@@ -1,0 +1,32 @@
+{
+  "description": "絞りの中のプロジェクトは通る",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "campaigns.read",
+    "project": "reading-memory"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

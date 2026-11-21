@@ -1,0 +1,72 @@
+{
+  "rule": "sampling",
+  "description": "5 の優先: dead が3回目（12秒）で当たる。60秒より前は無いので 0 から送る",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "book_detail",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "dead",
+        "t": 5000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "dead",
+        "t": 9000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "dead",
+        "t": 12000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "end",
+        "t": 90000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "buffered",
+    "upload_from_t": 0,
+    "priority": [
+      "dead"
+    ],
+    "previous_session_upload": false,
+    "session_replay": "priority"
+  }
+}

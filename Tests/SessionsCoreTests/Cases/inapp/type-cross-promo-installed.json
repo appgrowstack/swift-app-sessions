@@ -1,0 +1,157 @@
+{
+  "description": "cross_promo: 読書メモリーを入れている人には出さない",
+  "manifest": "gamification-app",
+  "set": {
+    "schema_version": 1,
+    "project": "gamification-app",
+    "version": 7,
+    "published_at": 1765000000000,
+    "policy": {},
+    "targets": {
+      "reading-memory": {
+        "name": "読書メモリー",
+        "ios": {
+          "asc_app_id": "6740000000"
+        },
+        "android": {
+          "package": "com.kyoichi.readingmemory"
+        }
+      }
+    },
+    "campaigns": [
+      {
+        "schema_version": 1,
+        "status": "active",
+        "priority": 50,
+        "platforms": [
+          "ios",
+          "android"
+        ],
+        "app_version": {
+          "ios": ">=3.3.0",
+          "android": ">=3.3.0"
+        },
+        "starts_at": null,
+        "ends_at": null,
+        "id": "cross-promo-reading-memory",
+        "type": "cross_promo",
+        "title": "読書の習慣を7日続けた人に、読書メモリーを紹介する",
+        "purpose": "紹介した人のうち読書メモリーを入れた人の数（R6 の流入元）",
+        "triggers": [
+          {
+            "id": "reading_streak",
+            "event": "habit_achieved",
+            "where": {
+              "all": [
+                {
+                  "prop": "category",
+                  "eq": "reading"
+                },
+                {
+                  "prop": "streak_days",
+                  "gte": 7
+                }
+              ]
+            },
+            "wait_seconds": 30
+          }
+        ],
+        "audience": {
+          "all": [
+            {
+              "fact": "installed_reading_memory",
+              "eq": false
+            }
+          ]
+        },
+        "limits": {
+          "max_shown": 2,
+          "min_hours_between": 336,
+          "after_dismiss_days": 30,
+          "after_action_days": null
+        },
+        "holdout": 0.2,
+        "show": {
+          "placement": "cross_promo",
+          "values": {
+            "headline": {
+              "ja": "読んだ本も、残しませんか",
+              "en": "Log the books you read"
+            },
+            "body": {
+              "ja": "読書メモリーは、読んだ本と気になった一文を写真で残せるアプリです。",
+              "en": "Reading Memory keeps the books you read and the lines you loved."
+            },
+            "icon": {
+              "asset": "icon_reading_memory"
+            },
+            "primary_label": {
+              "ja": "App Store で見る",
+              "en": "See on App Store"
+            }
+          }
+        },
+        "on_tap": {
+          "action": "open_store_page",
+          "args": {
+            "target": "reading-memory"
+          }
+        },
+        "goals": [
+          {
+            "event": "link_opened",
+            "where": {
+              "prop": "kind",
+              "eq": "store_page"
+            },
+            "within_hours": 1
+          }
+        ]
+      }
+    ]
+  },
+  "context": {
+    "platform": "ios",
+    "app_version": "3.3.0",
+    "build": "330",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "time_zone": "Asia/Tokyo",
+    "internal_device": false,
+    "days_since_first_seen": 10
+  },
+  "person": "user-1",
+  "fetched_at": "2026-12-10T09:00:00+09:00",
+  "now": "2026-12-10T12:00:00+09:00",
+  "history": {
+    "session_shown": 0,
+    "shown_at": [],
+    "campaigns": {}
+  },
+  "facts": {
+    "is_premium": false,
+    "has_trial_grant": false,
+    "achieved_days": 5,
+    "trial_eligible": true,
+    "installed_reading_memory": true
+  },
+  "texts": {},
+  "images_ready": [],
+  "event": {
+    "name": "habit_achieved",
+    "props": {
+      "category": "reading",
+      "streak_days": 7
+    }
+  },
+  "expect": {
+    "set_schema_valid": true,
+    "show": null,
+    "trigger": null,
+    "outcomes": {
+      "cross-promo-reading-memory": "audience"
+    },
+    "records": []
+  }
+}

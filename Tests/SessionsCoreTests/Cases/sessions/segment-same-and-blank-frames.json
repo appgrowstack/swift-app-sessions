@@ -1,0 +1,60 @@
+{
+  "rule": "segment",
+  "description": "same と blank のコマは画像を持たない。画像は image のコマの分だけ並ぶ",
+  "input": {
+    "bytes": "QUdTUgEAAAHSeyJzZXNzaW9uX2lkIjoic2VzX0ExYjJDM2Q0RTVmNkc3aDhJOWowIiwic2VxIjozLCJ0X2Zyb20iOjQwMDAwLCJ0X3RvIjo0NzAwMCwiZnJhbWVzIjpbeyJ0Ijo0MDAwMCwia2luZCI6InNhbWUiLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjpmYWxzZX0seyJ0Ijo0MTAwMCwia2luZCI6InNhbWUiLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjpmYWxzZX0seyJ0Ijo0NTAwMCwia2luZCI6ImJsYW5rIiwidyI6MzkzLCJoIjo4NTIsIm1hc2tlZCI6ZmFsc2UsInJlYXNvbiI6Im5vX2NhcHR1cmUifSx7InQiOjQ2MDAwLCJraW5kIjoiYmxhbmsiLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjpmYWxzZSwicmVhc29uIjoibWFza2luZ19mYWlsZWQifSx7InQiOjQ3MDAwLCJraW5kIjoiaW1hZ2UiLCJtaW1lIjoiaW1hZ2Uvd2VicCIsIm9mZnNldCI6MCwibGVuZ3RoIjoxMCwidyI6MzkzLCJoIjo4NTIsIm1hc2tlZCI6dHJ1ZX1dff/Y/9sAQwEC/9k="
+  },
+  "expect": {
+    "header": {
+      "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+      "seq": 3,
+      "t_from": 40000,
+      "t_to": 47000,
+      "frames": [
+        {
+          "t": 40000,
+          "kind": "same",
+          "w": 393,
+          "h": 852,
+          "masked": false
+        },
+        {
+          "t": 41000,
+          "kind": "same",
+          "w": 393,
+          "h": 852,
+          "masked": false
+        },
+        {
+          "t": 45000,
+          "kind": "blank",
+          "w": 393,
+          "h": 852,
+          "masked": false,
+          "reason": "no_capture"
+        },
+        {
+          "t": 46000,
+          "kind": "blank",
+          "w": 393,
+          "h": 852,
+          "masked": false,
+          "reason": "masking_failed"
+        },
+        {
+          "t": 47000,
+          "kind": "image",
+          "mime": "image/webp",
+          "offset": 0,
+          "length": 10,
+          "w": 393,
+          "h": 852,
+          "masked": true
+        }
+      ]
+    },
+    "images": [
+      "/9j/2wBDAQL/2Q=="
+    ]
+  }
+}

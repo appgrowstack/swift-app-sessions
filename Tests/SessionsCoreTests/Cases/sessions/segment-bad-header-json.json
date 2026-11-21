@@ -1,0 +1,10 @@
+{
+  "rule": "segment",
+  "description": "頭が JSON でない＝bad_header",
+  "input": {
+    "bytes": "QUdTUgEAAAARe3Nlc3Npb25faWQ6IG9vcHP/2P/gABBKRklG/9k="
+  },
+  "expect": {
+    "error": "bad_header"
+  }
+}

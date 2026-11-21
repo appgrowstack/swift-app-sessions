@@ -1,0 +1,19 @@
+{
+  "description": "Service Binding のアプリの Worker も管理の道を通さない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "binding",
+    "principal_id": "bind:gamification-app",
+    "step_up": false,
+    "memberships": []
+  },
+  "operation": {
+    "permission": "campaigns.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

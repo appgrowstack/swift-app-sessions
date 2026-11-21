@@ -1,0 +1,15 @@
+{
+  "rule": "end",
+  "description": "API 28。フラグが残っていて SDK のクラッシュの受け手が記録を書いた＝crashed",
+  "input": {
+    "platform": "android",
+    "android_api": 28,
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "tap",
+    "crash_handler": true
+  },
+  "expect": {
+    "reason": "crashed"
+  }
+}

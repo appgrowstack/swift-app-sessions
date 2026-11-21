@@ -1,0 +1,10 @@
+{
+  "rule": "segment",
+  "description": "2つ目の画像の length が画像の所を越える＝bad_frame_range",
+  "input": {
+    "bytes": "QUdTUgEAAAFVeyJzZXNzaW9uX2lkIjoic2VzX0ExYjJDM2Q0RTVmNkc3aDhJOWowIiwic2VxIjowLCJ0X2Zyb20iOjMwMCwidF90byI6MjEwMCwiZnJhbWVzIjpbeyJ0IjozMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjowLCJsZW5ndGgiOjEyLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjp0cnVlfSx7InQiOjEzMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjoxMiwibGVuZ3RoIjo5OTksInciOjM5MywiaCI6ODUyLCJtYXNrZWQiOmZhbHNlfSx7InQiOjIxMDAsImtpbmQiOiJzYW1lIiwidyI6MzkzLCJoIjo4NTIsIm1hc2tlZCI6ZmFsc2V9XX3/2P/gABBKRklG/9n/2P/bAEMBAv/Z"
+  },
+  "expect": {
+    "error": "bad_frame_range"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "サーバーキー（sk_）は自分のプロジェクトの読む道でも、管理の道を通さない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "server_key",
+    "principal_id": "key_server0000000001",
+    "step_up": false,
+    "memberships": []
+  },
+  "operation": {
+    "permission": "registry.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

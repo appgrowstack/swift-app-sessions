@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "フラグが残っていて REASON_ANR＝hung",
+  "input": {
+    "platform": "android",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "tap",
+    "exit_reason": "REASON_ANR"
+  },
+  "expect": {
+    "reason": "hung"
+  }
+}

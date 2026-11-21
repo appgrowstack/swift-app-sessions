@@ -1,0 +1,24 @@
+{
+  "rule": "tap_normalize",
+  "description": "窓の外（左と下へはみ出た）＝0〜10000 に収める",
+  "input": {
+    "tap": {
+      "x": -5,
+      "y": 900
+    },
+    "window": {
+      "x": 0,
+      "y": 0,
+      "w": 393,
+      "h": 852
+    }
+  },
+  "expect": {
+    "x": 0,
+    "y": 10000,
+    "orientation": "portrait",
+    "col": 0,
+    "row": 79,
+    "cell": 3160
+  }
+}

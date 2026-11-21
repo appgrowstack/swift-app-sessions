@@ -1,0 +1,66 @@
+{
+  "rule": "sampling",
+  "description": "5 の優先: 問い合わせを書いた（mark ticket・150秒）。90秒から送る",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "settings",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 100000,
+        "screen": "support_form",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "mark",
+        "t": 150000,
+        "kind": "ticket",
+        "ref": "tkt_01HZX3K9Q2"
+      },
+      {
+        "k": "end",
+        "t": 160000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "buffered",
+    "upload_from_t": 90000,
+    "priority": [
+      "ticket"
+    ],
+    "previous_session_upload": false,
+    "session_replay": "priority"
+  }
+}

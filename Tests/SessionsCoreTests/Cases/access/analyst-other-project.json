@@ -1,0 +1,33 @@
+{
+  "description": "分析のエージェントは絞りの外のプロジェクトを読めない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_analyst000000001",
+    "agent_location": "managed",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "viewer",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "campaigns.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

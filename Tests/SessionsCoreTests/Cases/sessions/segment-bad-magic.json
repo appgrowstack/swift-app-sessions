@@ -1,0 +1,10 @@
+{
+  "rule": "segment",
+  "description": "最初の4バイトが AGSX＝bad_magic",
+  "input": {
+    "bytes": "QUdTWAEAAAFUeyJzZXNzaW9uX2lkIjoic2VzX0ExYjJDM2Q0RTVmNkc3aDhJOWowIiwic2VxIjowLCJ0X2Zyb20iOjMwMCwidF90byI6MjEwMCwiZnJhbWVzIjpbeyJ0IjozMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjowLCJsZW5ndGgiOjEyLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjp0cnVlfSx7InQiOjEzMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjoxMiwibGVuZ3RoIjoxMCwidyI6MzkzLCJoIjo4NTIsIm1hc2tlZCI6ZmFsc2V9LHsidCI6MjEwMCwia2luZCI6InNhbWUiLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjpmYWxzZX1dff/Y/+AAEEpGSUb/2f/Y/9sAQwEC/9k="
+  },
+  "expect": {
+    "error": "bad_magic"
+  }
+}

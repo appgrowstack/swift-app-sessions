@@ -1,0 +1,13 @@
+{
+  "rule": "end",
+  "description": "フラグが残っていて、診断も hang も無い（メモリで落とされた）＝killed",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "screen"
+  },
+  "expect": {
+    "reason": "killed"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "rule": "dead",
+  "description": "ちょうど1.5秒後に画面が変わった（1500ミリ秒を含む）＝無し",
+  "input": {
+    "capturing": true,
+    "tap": {
+      "t": 5000,
+      "x": 5000,
+      "y": 8800,
+      "screen": "book_detail"
+    },
+    "fingerprint_before": "a1b2c3d4",
+    "after": [
+      {
+        "t": 5500,
+        "k": "frame",
+        "fingerprint": "a1b2c3d4"
+      },
+      {
+        "t": 6500,
+        "k": "screen"
+      }
+    ]
+  },
+  "expect": {
+    "dead": false
+  }
+}

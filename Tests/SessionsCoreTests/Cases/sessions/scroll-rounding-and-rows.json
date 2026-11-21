@@ -1,0 +1,30 @@
+{
+  "rule": "scroll",
+  "description": "800 × 10000 / 2400 = 3333.3… は切り捨てて 3333。max_row は row の最大",
+  "input": {
+    "samples": [
+      {
+        "offset_y": 0,
+        "height": 700,
+        "content_height": 2400,
+        "row": 3
+      },
+      {
+        "offset_y": 100,
+        "height": 700,
+        "content_height": 2400,
+        "row": 12
+      },
+      {
+        "offset_y": 50,
+        "height": 700,
+        "content_height": 2400,
+        "row": 7
+      }
+    ]
+  },
+  "expect": {
+    "max_ratio": 3333,
+    "max_row": 12
+  }
+}

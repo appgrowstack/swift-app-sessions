@@ -1,0 +1,28 @@
+{
+  "description": "editor の人は push の権限があるので、push の依頼を承認できる",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_editor0000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "campaigns.push",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

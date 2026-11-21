@@ -1,0 +1,28 @@
+{
+  "description": "editor の人は返事の権限が無いので、返事の依頼を承認できない",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_editor0000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "support.reply",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

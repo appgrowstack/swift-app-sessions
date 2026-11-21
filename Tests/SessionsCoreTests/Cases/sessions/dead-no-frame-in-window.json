@@ -1,0 +1,24 @@
+{
+  "rule": "dead",
+  "description": "1.5秒の間にコマが1つも無い（指で触れていて撮れなかった）＝確かめられないので出さない",
+  "input": {
+    "capturing": true,
+    "tap": {
+      "t": 5000,
+      "x": 5000,
+      "y": 8800,
+      "screen": "book_detail"
+    },
+    "fingerprint_before": "a1b2c3d4",
+    "after": [
+      {
+        "t": 7000,
+        "k": "frame",
+        "fingerprint": "a1b2c3d4"
+      }
+    ]
+  },
+  "expect": {
+    "dead": false
+  }
+}

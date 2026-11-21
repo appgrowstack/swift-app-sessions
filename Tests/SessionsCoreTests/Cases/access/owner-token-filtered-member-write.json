@@ -1,0 +1,32 @@
+{
+  "description": "プロジェクトを絞った ut_ では、プロジェクトにつかない設定の操作はできない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "access.member.write"
+      ],
+      "projects": [
+        "gamification-app"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "access.member.write",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

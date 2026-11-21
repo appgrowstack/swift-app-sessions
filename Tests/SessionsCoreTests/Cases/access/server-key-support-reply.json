@@ -1,0 +1,19 @@
+{
+  "description": "サーバーキー（sk_）で問い合わせの返事は断る（今は sk_ で通っていた道）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "server_key",
+    "principal_id": "key_server0000000001",
+    "step_up": false,
+    "memberships": []
+  },
+  "operation": {
+    "permission": "support.reply",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

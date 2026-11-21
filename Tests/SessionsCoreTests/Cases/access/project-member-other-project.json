@@ -1,0 +1,24 @@
+{
+  "description": "プロジェクトの所属は、ほかのプロジェクトには効かない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_support000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "support",
+        "project": "reading-memory"
+      }
+    ]
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "description": "R3 の holdout の割り当て。unit は小数6桁で丸めて比べる。key は hash32 に入れる文字列",
+  "vectors": [
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-1",
+        "campaign": "trial-2days-after-feature",
+        "holdout": 0.2,
+        "internal": false
+      },
+      "key": "gamification-app:user-1:trial-2days-after-feature:holdout",
+      "hash32": 722968597,
+      "expect": {
+        "unit": 0.168329,
+        "side": "holdout"
+      }
+    },
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-1",
+        "campaign": "trial-2days-after-feature",
+        "holdout": 0.2,
+        "internal": true
+      },
+      "key": "gamification-app:user-1:trial-2days-after-feature:holdout",
+      "hash32": 722968597,
+      "expect": {
+        "unit": 0.168329,
+        "side": "treatment"
+      }
+    },
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-6",
+        "campaign": "trial-2days-after-feature",
+        "holdout": 0.2,
+        "internal": false
+      },
+      "key": "gamification-app:user-6:trial-2days-after-feature:holdout",
+      "hash32": 3398128880,
+      "expect": {
+        "unit": 0.791189,
+        "side": "treatment"
+      }
+    },
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-8",
+        "campaign": "aaa-offer",
+        "holdout": 0.2,
+        "internal": false
+      },
+      "key": "gamification-app:user-8:aaa-offer:holdout",
+      "hash32": 740715927,
+      "expect": {
+        "unit": 0.172461,
+        "side": "holdout"
+      }
+    },
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "user-1",
+        "campaign": "trial-2days-after-feature",
+        "holdout": 0,
+        "internal": false
+      },
+      "key": "gamification-app:user-1:trial-2days-after-feature:holdout",
+      "hash32": 722968597,
+      "expect": {
+        "unit": 0.168329,
+        "side": "treatment"
+      }
+    },
+    {
+      "input": {
+        "project": "gamification-app",
+        "person_id": "3f2a9c1e-7b4d-4e8a-9c21-5d6e7f8a9b0c",
+        "campaign": "review-after-third-exchange",
+        "holdout": 0.5,
+        "internal": false
+      },
+      "key": "gamification-app:3f2a9c1e-7b4d-4e8a-9c21-5d6e7f8a9b0c:review-after-third-exchange:holdout",
+      "hash32": 1523532257,
+      "expect": {
+        "unit": 0.354725,
+        "side": "holdout"
+      }
+    },
+    {
+      "input": {
+        "project": "stock-radar",
+        "person_id": "uid:AbC123xyz",
+        "campaign": "bedtime_reminder",
+        "holdout": 0.1,
+        "internal": false
+      },
+      "key": "stock-radar:uid:AbC123xyz:bedtime_reminder:holdout",
+      "hash32": 4077156081,
+      "expect": {
+        "unit": 0.949287,
+        "side": "treatment"
+      }
+    },
+    {
+      "input": {
+        "project": "reading-memory",
+        "person_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+        "campaign": "cross-promo-reading-memory",
+        "holdout": 0.3,
+        "internal": false
+      },
+      "key": "reading-memory:0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d:cross-promo-reading-memory:holdout",
+      "hash32": 4045064875,
+      "expect": {
+        "unit": 0.941815,
+        "side": "treatment"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "Access のサービストークンだけで core のトークンが無い要求は、読む操作でも 401 token_required",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_service_only",
+    "step_up": false,
+    "memberships": []
+  },
+  "operation": {
+    "permission": "registry.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 401,
+    "code": "token_required"
+  }
+}

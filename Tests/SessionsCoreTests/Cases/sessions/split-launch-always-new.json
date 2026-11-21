@@ -1,0 +1,39 @@
+{
+  "rule": "split",
+  "description": "裏に1分で起動し直した（裏で落とされた）＝起動はいつも新しいセッション。前の終わり方は end の決まりで決める",
+  "input": {
+    "steps": [
+      {
+        "t": 1795230000000,
+        "k": "launch"
+      },
+      {
+        "t": 1795230060000,
+        "k": "background"
+      },
+      {
+        "t": 1795230120000,
+        "k": "launch"
+      }
+    ]
+  },
+  "expect": {
+    "session_of_step": [
+      0,
+      0,
+      1
+    ],
+    "sessions": [
+      {
+        "start": 1795230000000,
+        "end": null,
+        "by": "launch"
+      },
+      {
+        "start": 1795230120000,
+        "end": null,
+        "by": null
+      }
+    ]
+  }
+}

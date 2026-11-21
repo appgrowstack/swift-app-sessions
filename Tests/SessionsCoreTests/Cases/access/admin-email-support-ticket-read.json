@@ -1,0 +1,24 @@
+{
+  "description": "admin は人の本文（段階3）を読まない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_admin00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "admin",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

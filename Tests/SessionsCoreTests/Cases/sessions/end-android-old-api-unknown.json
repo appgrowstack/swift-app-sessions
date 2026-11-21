@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "API 28。フラグが残っていて理由が分からない＝unknown（API 30 より前は unknown と crashed だけ）",
+  "input": {
+    "platform": "android",
+    "android_api": 28,
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "tap"
+  },
+  "expect": {
+    "reason": "unknown"
+  }
+}

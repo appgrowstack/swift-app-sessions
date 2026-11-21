@@ -1,0 +1,274 @@
+{
+  "project": "gamification-app",
+  "placements": {
+    "trial_offer": {
+      "kind": "modal",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "trial_offer",
+      "fields": {
+        "headline": {
+          "type": "text",
+          "required": true,
+          "max_chars": 24
+        },
+        "body": {
+          "type": "text",
+          "required": true,
+          "max_chars": 120
+        },
+        "primary_label": {
+          "type": "text",
+          "required": true,
+          "max_chars": 24
+        },
+        "secondary_label": {
+          "type": "text",
+          "required": true,
+          "max_chars": 12
+        },
+        "image": {
+          "type": "image",
+          "required": false
+        }
+      }
+    },
+    "banner": {
+      "kind": "modal",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "fields": {
+        "title": {
+          "type": "text",
+          "required": true,
+          "max_chars": 30
+        },
+        "note": {
+          "type": "text",
+          "required": false
+        },
+        "badge": {
+          "type": "string",
+          "required": false
+        },
+        "count": {
+          "type": "int",
+          "required": false
+        },
+        "emphasize": {
+          "type": "bool",
+          "required": false
+        },
+        "image": {
+          "type": "image",
+          "required": false
+        }
+      }
+    },
+    "review_ask": {
+      "kind": "system",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "review_ask",
+      "fields": {}
+    },
+    "whats_new": {
+      "kind": "modal",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "whats_new",
+      "fields": {
+        "headline": {
+          "type": "text",
+          "required": true,
+          "max_chars": 20
+        },
+        "body": {
+          "type": "text",
+          "required": true,
+          "max_chars": 60
+        },
+        "image": {
+          "type": "image",
+          "required": false
+        },
+        "primary_label": {
+          "type": "text",
+          "required": false,
+          "max_chars": 16
+        }
+      }
+    },
+    "cross_promo": {
+      "kind": "modal",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "cross_promo",
+      "fields": {
+        "headline": {
+          "type": "text",
+          "required": true,
+          "max_chars": 24
+        },
+        "body": {
+          "type": "text",
+          "required": true,
+          "max_chars": 80
+        },
+        "icon": {
+          "type": "image",
+          "required": true
+        },
+        "primary_label": {
+          "type": "text",
+          "required": true,
+          "max_chars": 16
+        },
+        "secondary_label": {
+          "type": "text",
+          "required": false,
+          "max_chars": 12
+        }
+      }
+    }
+  },
+  "assets": {
+    "trial_gift": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "icon_reading_memory": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    }
+  },
+  "actions": {
+    "start_trial": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "trial_offer",
+      "args": {}
+    },
+    "open_habit": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "args": {
+        "habit": {
+          "type": "string",
+          "required": true
+        },
+        "days": {
+          "type": "int",
+          "required": false
+        }
+      }
+    },
+    "request_review": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "review_ask",
+      "args": {}
+    },
+    "open_store_page": {
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      },
+      "template": "cross_promo",
+      "args": {
+        "target": {
+          "type": "string",
+          "required": true
+        }
+      }
+    }
+  },
+  "facts": {
+    "is_premium": {
+      "type": "bool",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "has_trial_grant": {
+      "type": "bool",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "achieved_days": {
+      "type": "int",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "plan": {
+      "type": "string",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "trial_eligible": {
+      "type": "bool",
+      "source": "server",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "installed_reading_memory": {
+      "type": "bool",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    },
+    "days_since_trial_ended": {
+      "type": "int",
+      "source": "device",
+      "since": {
+        "ios": "3.3.0",
+        "android": "3.3.0"
+      }
+    }
+  },
+  "link_hosts": [
+    "gohobishukan.com"
+  ],
+  "voice": {
+    "banned_words": {
+      "ja": ["ポイント", "稼ぐ", "貯まる", "ゴールド", "もらえる", "貯金", "お小遣い", "還元"],
+      "en": ["points", "earn", "cash"],
+      "zh": ["积分", "積分"]
+    }
+  }
+}

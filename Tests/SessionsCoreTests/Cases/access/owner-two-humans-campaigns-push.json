@@ -1,0 +1,23 @@
+{
+  "description": "人が2人の組織では、owner が自分で push しても依頼になり、別の人の承認を待つ",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "campaigns.push",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "pending_approval",
+    "status": 202
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "rule": "segment",
+  "description": "頭が JSON でも ReplaySegmentHeader に合わない（frames が無い）＝bad_header",
+  "input": {
+    "bytes": "QUdTUgEAAABFeyJzZXNzaW9uX2lkIjoic2VzX0ExYjJDM2Q0RTVmNkc3aDhJOWowIiwic2VxIjowLCJ0X2Zyb20iOjAsInRfdG8iOjB9"
+  },
+  "expect": {
+    "error": "bad_header"
+  }
+}

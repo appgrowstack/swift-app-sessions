@@ -1,0 +1,52 @@
+{
+  "rule": "quick_back",
+  "description": "2.5秒で戻った＝back だけ（quick_back は無し）",
+  "input": {
+    "nav": [
+      {
+        "t": 0,
+        "op": "launch",
+        "screen": "bookshelf"
+      },
+      {
+        "t": 5000,
+        "op": "push",
+        "screen": "book_detail"
+      },
+      {
+        "t": 7500,
+        "op": "pop",
+        "screen": "bookshelf",
+        "by": "button"
+      }
+    ]
+  },
+  "expect": {
+    "events": [
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch"
+      },
+      {
+        "k": "screen",
+        "t": 5000,
+        "screen": "book_detail",
+        "via": "push"
+      },
+      {
+        "k": "back",
+        "t": 7500,
+        "screen": "book_detail",
+        "via": "button"
+      },
+      {
+        "k": "screen",
+        "t": 7500,
+        "screen": "bookshelf",
+        "via": "pop"
+      }
+    ]
+  }
+}

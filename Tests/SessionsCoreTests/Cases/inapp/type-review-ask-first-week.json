@@ -1,0 +1,120 @@
+{
+  "description": "review_ask: 入れてから7日たっていない人には頼まない（rating R5・R9）",
+  "manifest": "gamification-app",
+  "set": {
+    "schema_version": 1,
+    "project": "gamification-app",
+    "version": 7,
+    "published_at": 1765000000000,
+    "policy": {},
+    "targets": {},
+    "campaigns": [
+      {
+        "schema_version": 1,
+        "status": "active",
+        "priority": 50,
+        "platforms": [
+          "ios",
+          "android"
+        ],
+        "app_version": {
+          "ios": ">=3.3.0",
+          "android": ">=3.3.0"
+        },
+        "starts_at": null,
+        "ends_at": null,
+        "id": "review-after-third-exchange",
+        "type": "review_ask",
+        "title": "3回目の交換が成立した後に、OS の評価の窓を出す",
+        "purpose": "良い瞬間に頼んで、評価の件数が前の版より増えるか（ASC の週ごとの件数）",
+        "triggers": [
+          {
+            "id": "third_exchange",
+            "event": "exchange_completed",
+            "where": {
+              "prop": "count",
+              "gte": 3
+            },
+            "wait_seconds": 2
+          }
+        ],
+        "audience": {
+          "all": [
+            {
+              "fact": "days_since_first_seen",
+              "gte": 7
+            }
+          ]
+        },
+        "limits": {
+          "max_shown": 3,
+          "max_per_app_version": 1,
+          "min_hours_between": 1440,
+          "after_dismiss_days": 60,
+          "after_action_days": 60
+        },
+        "holdout": 0,
+        "show": {
+          "placement": "review_ask",
+          "values": {}
+        },
+        "on_tap": {
+          "action": "request_review",
+          "args": {}
+        },
+        "goals": [
+          {
+            "event": "campaign_action_completed",
+            "where": {
+              "prop": "action",
+              "eq": "request_review"
+            },
+            "within_hours": 1
+          }
+        ]
+      }
+    ]
+  },
+  "context": {
+    "platform": "ios",
+    "app_version": "3.3.0",
+    "build": "330",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "time_zone": "Asia/Tokyo",
+    "internal_device": false,
+    "days_since_first_seen": 3
+  },
+  "person": "user-6",
+  "fetched_at": "2026-12-10T09:00:00+09:00",
+  "now": "2026-12-10T12:00:00+09:00",
+  "history": {
+    "session_shown": 0,
+    "shown_at": [],
+    "campaigns": {}
+  },
+  "facts": {
+    "is_premium": false,
+    "has_trial_grant": false,
+    "achieved_days": 5,
+    "trial_eligible": true
+  },
+  "texts": {},
+  "images_ready": [],
+  "event": {
+    "name": "exchange_completed",
+    "props": {
+      "count": 3
+    }
+  },
+  "expect": {
+    "set_schema_valid": true,
+    "show": null,
+    "trigger": null,
+    "outcomes": {
+      "review-after-third-exchange": "audience"
+    },
+    "records": []
+  }
+}

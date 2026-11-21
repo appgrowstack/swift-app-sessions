@@ -1,0 +1,68 @@
+{
+  "rule": "sampling",
+  "description": "paywall_shown の後に purchase_completed があってから閉じた＝優先にならない",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "book_detail",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "mark",
+        "t": 30000,
+        "kind": "paywall_shown",
+        "ref": "ai_summary"
+      },
+      {
+        "k": "mark",
+        "t": 50000,
+        "kind": "purchase_completed",
+        "ref": "premium_monthly"
+      },
+      {
+        "k": "event",
+        "t": 51000,
+        "name": "paywall_closed",
+        "props": {
+          "result": "purchased"
+        }
+      },
+      {
+        "k": "end",
+        "t": 120000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "none",
+    "priority": [],
+    "previous_session_upload": false,
+    "session_replay": "buffer"
+  }
+}

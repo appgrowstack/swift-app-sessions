@@ -1,0 +1,25 @@
+{
+  "rule": "mask_rects",
+  "description": "マークの位置が取れなかった（null）＝コマを捨てる（blank・masking_failed）",
+  "input": {
+    "scale": 3,
+    "image": {
+      "w": 1179,
+      "h": 2556
+    },
+    "rects": [
+      {
+        "x": 0,
+        "y": 100,
+        "w": 393,
+        "h": 44
+      },
+      null
+    ]
+  },
+  "expect": {
+    "drop": true,
+    "reason": "masking_failed",
+    "rects": []
+  }
+}

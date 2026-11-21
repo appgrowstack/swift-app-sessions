@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "裏に行ってフラグを消した後に裏で落ちた（REASON_CRASH）＝フラグが残っていないので background_timeout",
+  "input": {
+    "platform": "android",
+    "previous_record": true,
+    "running_flag": false,
+    "last_event": "background",
+    "exit_reason": "REASON_CRASH"
+  },
+  "expect": {
+    "reason": "background_timeout"
+  }
+}

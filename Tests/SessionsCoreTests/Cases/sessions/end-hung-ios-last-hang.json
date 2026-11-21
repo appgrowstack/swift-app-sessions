@@ -1,0 +1,13 @@
+{
+  "rule": "end",
+  "description": "フラグが残っていて最後の出来事が hang（OS の監視で落とされた）＝hung",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "hang"
+  },
+  "expect": {
+    "reason": "hung"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "rule": "end",
+  "description": "起動の時は診断が無く killed。後から MetricKit のクラッシュの診断が届き crashed に直す（end を直すバッチをもう1回送る）",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "tap",
+    "late_metrickit_crash": true
+  },
+  "expect": {
+    "reason": "killed",
+    "revised": "crashed"
+  }
+}

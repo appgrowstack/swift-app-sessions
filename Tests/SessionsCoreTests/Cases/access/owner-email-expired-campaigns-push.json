@@ -1,0 +1,24 @@
+{
+  "description": "ログインから12時間を過ぎた owner の push は 403 step_up_required",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "campaigns.push",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "step_up_required",
+    "status": 403,
+    "code": "step_up_required"
+  }
+}

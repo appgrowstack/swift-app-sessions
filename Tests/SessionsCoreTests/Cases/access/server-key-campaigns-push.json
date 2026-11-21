@@ -1,0 +1,19 @@
+{
+  "description": "サーバーキー（sk_）で件の push は、承認の依頼にもならず 403 forbidden",
+  "org_humans": 1,
+  "caller": {
+    "credential": "server_key",
+    "principal_id": "key_server0000000001",
+    "step_up": false,
+    "memberships": []
+  },
+  "operation": {
+    "permission": "campaigns.push",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

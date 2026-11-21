@@ -1,0 +1,28 @@
+{
+  "description": "人が2人の組織では、依頼した人が自分で承認できない",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "campaigns.push",
+    "requested_by": "usr_owner00000000001"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

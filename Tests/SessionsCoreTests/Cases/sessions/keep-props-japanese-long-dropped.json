@@ -1,0 +1,27 @@
+{
+  "rule": "keep_props",
+  "description": "日本語の文（54文字・UTF-16 の符号で数える）は48文字を超える＝捨てる",
+  "input": {
+    "source": "common",
+    "name": "screen_viewed",
+    "props": {
+      "screen": "book_note",
+      "title": "読書メモリーで今日読んだ本の感想を少しだけ書いておく。とても面白かったので続きも読みたいと思う。明日も読む。"
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "screen": "book_note"
+    },
+    "props_dropped": true
+  }
+}

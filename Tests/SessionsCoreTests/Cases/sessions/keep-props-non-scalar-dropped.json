@@ -1,0 +1,33 @@
+{
+  "rule": "keep_props",
+  "description": "文字列・数・真偽でない値（配列・null）は捨てる。props_dropped にはしない",
+  "input": {
+    "source": "common",
+    "name": "screen_viewed",
+    "props": {
+      "screen": "bookshelf",
+      "tags": [
+        "a",
+        "b"
+      ],
+      "extra": null,
+      "ok": true
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "screen": "bookshelf",
+      "ok": true
+    },
+    "props_dropped": false
+  }
+}

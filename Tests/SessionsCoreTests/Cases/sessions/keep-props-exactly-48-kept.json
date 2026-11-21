@@ -1,0 +1,28 @@
+{
+  "rule": "keep_props",
+  "description": "48文字ちょうどは残す",
+  "input": {
+    "source": "common",
+    "name": "screen_viewed",
+    "props": {
+      "screen": "book_detail",
+      "label": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "screen": "book_detail",
+      "label": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "props_dropped": false
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "rule": "sampling",
+  "description": "5 の優先: hang（95秒）。35秒から送る",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "hang",
+        "t": 95000,
+        "ms": 2600
+      },
+      {
+        "k": "end",
+        "t": 200000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "buffered",
+    "upload_from_t": 35000,
+    "priority": [
+      "hang"
+    ],
+    "previous_session_upload": false,
+    "session_replay": "priority"
+  }
+}

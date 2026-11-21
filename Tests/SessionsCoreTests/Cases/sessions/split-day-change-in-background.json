@@ -1,0 +1,35 @@
+{
+  "rule": "split",
+  "description": "23:50（Asia/Tokyo）に裏へ行き、20分後の 00:10 に戻る＝日付が変わっても同じセッション",
+  "input": {
+    "time_zone": "Asia/Tokyo",
+    "steps": [
+      {
+        "t": 1795272000000,
+        "k": "launch"
+      },
+      {
+        "t": 1795272600000,
+        "k": "background"
+      },
+      {
+        "t": 1795273800000,
+        "k": "foreground"
+      }
+    ]
+  },
+  "expect": {
+    "session_of_step": [
+      0,
+      0,
+      0
+    ],
+    "sessions": [
+      {
+        "start": 1795272000000,
+        "end": null,
+        "by": null
+      }
+    ]
+  }
+}

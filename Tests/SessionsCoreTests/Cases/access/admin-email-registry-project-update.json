@@ -1,0 +1,24 @@
+{
+  "description": "admin は登録の変更ができる（本人の確認つきで直接）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_admin00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "admin",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "registry.project.update",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": true
+  }
+}

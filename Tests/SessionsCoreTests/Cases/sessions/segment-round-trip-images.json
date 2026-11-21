@@ -1,0 +1,48 @@
+{
+  "rule": "segment",
+  "description": "画像2つと same 1つの塊。読むと同じ頭と画像（書いて読み直しても同じ）。offset は頭の終わりから",
+  "input": {
+    "bytes": "QUdTUgEAAAFUeyJzZXNzaW9uX2lkIjoic2VzX0ExYjJDM2Q0RTVmNkc3aDhJOWowIiwic2VxIjowLCJ0X2Zyb20iOjMwMCwidF90byI6MjEwMCwiZnJhbWVzIjpbeyJ0IjozMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjowLCJsZW5ndGgiOjEyLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjp0cnVlfSx7InQiOjEzMDAsImtpbmQiOiJpbWFnZSIsIm1pbWUiOiJpbWFnZS9qcGVnIiwib2Zmc2V0IjoxMiwibGVuZ3RoIjoxMCwidyI6MzkzLCJoIjo4NTIsIm1hc2tlZCI6ZmFsc2V9LHsidCI6MjEwMCwia2luZCI6InNhbWUiLCJ3IjozOTMsImgiOjg1MiwibWFza2VkIjpmYWxzZX1dff/Y/+AAEEpGSUb/2f/Y/9sAQwEC/9k="
+  },
+  "expect": {
+    "header": {
+      "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+      "seq": 0,
+      "t_from": 300,
+      "t_to": 2100,
+      "frames": [
+        {
+          "t": 300,
+          "kind": "image",
+          "mime": "image/jpeg",
+          "offset": 0,
+          "length": 12,
+          "w": 393,
+          "h": 852,
+          "masked": true
+        },
+        {
+          "t": 1300,
+          "kind": "image",
+          "mime": "image/jpeg",
+          "offset": 12,
+          "length": 10,
+          "w": 393,
+          "h": 852,
+          "masked": false
+        },
+        {
+          "t": 2100,
+          "kind": "same",
+          "w": 393,
+          "h": 852,
+          "masked": false
+        }
+      ]
+    },
+    "images": [
+      "/9j/4AAQSkZJRv/Z",
+      "/9j/2wBDAQL/2Q=="
+    ]
+  }
+}

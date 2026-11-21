@@ -1,0 +1,28 @@
+{
+  "rule": "keep_props",
+  "description": "campaigns_ で始まる出来事も全部残す",
+  "input": {
+    "source": "app",
+    "name": "campaigns_stale",
+    "props": {
+      "age_hours": 80,
+      "cached": true
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "age_hours": 80,
+      "cached": true
+    },
+    "props_dropped": false
+  }
+}

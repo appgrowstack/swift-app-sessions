@@ -1,0 +1,45 @@
+{
+  "rule": "quick_back",
+  "description": "0.5秒でタブを替えて元のタブへ＝戻るではない（screen の via tab だけ）",
+  "input": {
+    "nav": [
+      {
+        "t": 0,
+        "op": "launch",
+        "screen": "bookshelf"
+      },
+      {
+        "t": 1000,
+        "op": "tab",
+        "screen": "settings"
+      },
+      {
+        "t": 1500,
+        "op": "tab",
+        "screen": "bookshelf"
+      }
+    ]
+  },
+  "expect": {
+    "events": [
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch"
+      },
+      {
+        "k": "screen",
+        "t": 1000,
+        "screen": "settings",
+        "via": "tab"
+      },
+      {
+        "k": "screen",
+        "t": 1500,
+        "screen": "bookshelf",
+        "via": "tab"
+      }
+    ]
+  }
+}

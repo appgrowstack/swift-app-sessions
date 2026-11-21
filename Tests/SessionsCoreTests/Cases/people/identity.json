@@ -1,0 +1,319 @@
+{
+  "description": "R2 の人の id の決め方。steps を順に呼び、各 step の答えと最後のつなぎ（links: <kind>:<value> → person_id）を確かめる。call は track・identify・subscription（actor だけを見る）",
+  "cases": [
+    {
+      "description": "初めての install。人の id は install_id",
+      "steps": [
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "後からサインインしても人の id は変わらない（holdout の側も変わらない）",
+      "steps": [
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidA": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "入れ直した（新しい install）後に、前と同じアカウントでサインイン。前の人に寄せる",
+      "steps": [
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000002"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000002"
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000002",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": "a1b2c3d4-0000-4000-8000-000000000002"
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000002"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "install:a1b2c3d4-0000-4000-8000-000000000002": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidA": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "2台目の端末で同じアカウントに入った。1台目の人に寄せる",
+      "steps": [
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000003",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "install:a1b2c3d4-0000-4000-8000-000000000003": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidA": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "同じ install でアカウントを切り替えた。新しいアカウントは uid:<uid> の別の人で、install のつなぎは最後の人に移る。戻せば前の人",
+      "steps": [
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidB"
+          },
+          "expect": {
+            "person_id": "uid:uidB",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "uid:uidB"
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": false,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidA": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidB": "uid:uidB"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "install より先に uid だけが届いた（RevenueCat の webhook）。uid:<uid> の人を作り、後から届いた install をそこへつなぐ",
+      "steps": [
+        {
+          "call": "subscription",
+          "actor": {
+            "uid": "uidR"
+          },
+          "expect": {
+            "person_id": "uid:uidR"
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidR"
+          },
+          "expect": {
+            "person_id": "uid:uidR",
+            "linked": true,
+            "merged_from": null
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "uid:uidR",
+        "uid:uidR": "uid:uidR"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "install だけで開いた人が、サーバーにだけ届いていた uid（端末の無い人）でサインイン。端末のある人が残り、uid の人を寄せる（holdout の側を変えない）",
+      "steps": [
+        {
+          "call": "subscription",
+          "actor": {
+            "uid": "uidR"
+          },
+          "expect": {
+            "person_id": "uid:uidR"
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        },
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidR"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": "uid:uidR"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidR": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    },
+    {
+      "description": "サインアウトした後の install だけの出来事は、最後につないだ人のまま",
+      "steps": [
+        {
+          "call": "identify",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "uid": "uidA"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001",
+            "linked": true,
+            "merged_from": null
+          }
+        },
+        {
+          "call": "track",
+          "actor": {
+            "install_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          },
+          "expect": {
+            "person_id": "a1b2c3d4-0000-4000-8000-000000000001"
+          }
+        }
+      ],
+      "links": {
+        "install:a1b2c3d4-0000-4000-8000-000000000001": "a1b2c3d4-0000-4000-8000-000000000001",
+        "uid:uidA": "a1b2c3d4-0000-4000-8000-000000000001"
+      },
+      "project": "gamification-app"
+    }
+  ]
+}

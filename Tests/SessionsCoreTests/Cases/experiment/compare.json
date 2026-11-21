@@ -1,0 +1,159 @@
+{
+  "description": "R3 の差と95%の幅（正規近似・1.96）。数は小数6桁で丸めて比べる",
+  "vectors": [
+    {
+      "description": "出す側が上",
+      "input": {
+        "treatment": {
+          "eligible": 400,
+          "reached": 60
+        },
+        "holdout": {
+          "eligible": 100,
+          "reached": 8
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "compared",
+        "treatment_rate": 0.15,
+        "holdout_rate": 0.08,
+        "diff": 0.07,
+        "low": 0.006345,
+        "high": 0.133655
+      }
+    },
+    {
+      "description": "差が0",
+      "input": {
+        "treatment": {
+          "eligible": 200,
+          "reached": 20
+        },
+        "holdout": {
+          "eligible": 50,
+          "reached": 5
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "compared",
+        "treatment_rate": 0.1,
+        "holdout_rate": 0.1,
+        "diff": 0.0,
+        "low": -0.092971,
+        "high": 0.092971
+      }
+    },
+    {
+      "description": "出さない側が29人で足りない",
+      "input": {
+        "treatment": {
+          "eligible": 300,
+          "reached": 30
+        },
+        "holdout": {
+          "eligible": 29,
+          "reached": 3
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "too_few",
+        "treatment_rate": 0.1,
+        "holdout_rate": 0.103448,
+        "diff": null,
+        "low": null,
+        "high": null
+      }
+    },
+    {
+      "description": "両方0人",
+      "input": {
+        "treatment": {
+          "eligible": 0,
+          "reached": 0
+        },
+        "holdout": {
+          "eligible": 0,
+          "reached": 0
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "too_few",
+        "treatment_rate": null,
+        "holdout_rate": null,
+        "diff": null,
+        "low": null,
+        "high": null
+      }
+    },
+    {
+      "description": "全員が成果",
+      "input": {
+        "treatment": {
+          "eligible": 40,
+          "reached": 40
+        },
+        "holdout": {
+          "eligible": 30,
+          "reached": 30
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "compared",
+        "treatment_rate": 1.0,
+        "holdout_rate": 1.0,
+        "diff": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      }
+    },
+    {
+      "description": "min_per_arm を100に",
+      "input": {
+        "treatment": {
+          "eligible": 120,
+          "reached": 30
+        },
+        "holdout": {
+          "eligible": 99,
+          "reached": 20
+        },
+        "min_per_arm": 100
+      },
+      "expect": {
+        "status": "too_few",
+        "treatment_rate": 0.25,
+        "holdout_rate": 0.20202,
+        "diff": null,
+        "low": null,
+        "high": null
+      }
+    },
+    {
+      "description": "出す側が下",
+      "input": {
+        "treatment": {
+          "eligible": 1000,
+          "reached": 50
+        },
+        "holdout": {
+          "eligible": 250,
+          "reached": 20
+        },
+        "min_per_arm": 30
+      },
+      "expect": {
+        "status": "compared",
+        "treatment_rate": 0.05,
+        "holdout_rate": 0.08,
+        "diff": -0.03,
+        "low": -0.066241,
+        "high": 0.006241
+      }
+    }
+  ]
+}

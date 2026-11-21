@@ -1,0 +1,24 @@
+{
+  "rule": "tap_normalize",
+  "description": "左上の端（0, 0）＝0・0・升 0",
+  "input": {
+    "tap": {
+      "x": 0,
+      "y": 0
+    },
+    "window": {
+      "x": 0,
+      "y": 0,
+      "w": 393,
+      "h": 852
+    }
+  },
+  "expect": {
+    "x": 0,
+    "y": 0,
+    "orientation": "portrait",
+    "col": 0,
+    "row": 0,
+    "cell": 0
+  }
+}

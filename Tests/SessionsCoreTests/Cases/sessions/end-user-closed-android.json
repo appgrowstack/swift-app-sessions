@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "Android で次の起動に REASON_USER_REQUESTED＝user_closed",
+  "input": {
+    "platform": "android",
+    "previous_record": true,
+    "running_flag": false,
+    "last_event": "background",
+    "exit_reason": "REASON_USER_REQUESTED"
+  },
+  "expect": {
+    "reason": "user_closed"
+  }
+}

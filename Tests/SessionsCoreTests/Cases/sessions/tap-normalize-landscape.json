@@ -1,0 +1,24 @@
+{
+  "rule": "tap_normalize",
+  "description": "横向きの窓（852×393）＝landscape",
+  "input": {
+    "tap": {
+      "x": 100,
+      "y": 300
+    },
+    "window": {
+      "x": 0,
+      "y": 0,
+      "w": 852,
+      "h": 393
+    }
+  },
+  "expect": {
+    "x": 1174,
+    "y": 7634,
+    "orientation": "landscape",
+    "col": 4,
+    "row": 61,
+    "cell": 2444
+  }
+}

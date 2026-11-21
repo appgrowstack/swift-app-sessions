@@ -1,0 +1,24 @@
+{
+  "description": "人が1人の組織で、owner の本人が本人の確認つきで push すると、依頼と承認を1回にして self_approved で実行する",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "campaigns.push",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": true
+  }
+}

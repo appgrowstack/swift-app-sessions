@@ -1,0 +1,28 @@
+{
+  "description": "本人の確認が切れた owner は承認できず 403 step_up_required",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "campaigns.push",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "step_up_required",
+    "status": 403,
+    "code": "step_up_required"
+  }
+}

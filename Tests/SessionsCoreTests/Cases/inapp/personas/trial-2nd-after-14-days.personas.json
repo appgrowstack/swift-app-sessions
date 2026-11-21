@@ -1,0 +1,54 @@
+{
+  "campaign": "trial-2nd-after-14-days",
+  "personas": [
+    {
+      "name": "1回目から20日・交換した",
+      "context": {
+        "platform": "ios",
+        "app_version": "3.3.0",
+        "channel": "appstore",
+        "lang": "ja",
+        "days_since_first_seen": 30
+      },
+      "facts": {
+        "is_premium": false,
+        "days_since_trial_ended": 20,
+        "achieved_days": 5,
+        "trial_eligible": true
+      },
+      "history": {},
+      "side": "treatment",
+      "events": [
+        {
+          "after_seconds": 0,
+          "name": "exchange_completed",
+          "props": {}
+        }
+      ],
+      "expect": {
+        "outcome": "show",
+        "trigger": "after_exchange"
+      }
+    },
+    {
+      "name": "1回目から10日",
+      "facts": {
+        "is_premium": false,
+        "days_since_trial_ended": 10,
+        "achieved_days": 5,
+        "trial_eligible": true
+      },
+      "events": [
+        {
+          "after_seconds": 0,
+          "name": "exchange_completed",
+          "props": {}
+        }
+      ],
+      "expect": {
+        "outcome": "audience",
+        "stopped_at": "audience.all[1]"
+      }
+    }
+  ]
+}

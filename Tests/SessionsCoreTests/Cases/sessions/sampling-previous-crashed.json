@@ -1,0 +1,49 @@
+{
+  "rule": "sampling",
+  "description": "前のセッションが crashed＝前のセッションの残った塊を送る。このセッションは優先の条件に当たらないので送らない",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0.5,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "crashed",
+        "first": false,
+        "previous_session_id": "ses_Z9y8X7w6V5u4T3s2R1q0"
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "end",
+        "t": 60000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": true,
+    "hash": 2628330987,
+    "upload": "none",
+    "priority": [],
+    "previous_session_upload": true,
+    "session_replay": "buffer"
+  }
+}

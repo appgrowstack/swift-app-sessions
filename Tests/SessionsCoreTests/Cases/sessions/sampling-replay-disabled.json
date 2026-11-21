@@ -1,0 +1,55 @@
+{
+  "rule": "sampling",
+  "description": "2: replay.enabled が false＝録画は送らず撮らない。rage があっても優先の条件を見ない",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": false,
+      "sample": 1,
+      "daily_cap": 3000
+    },
+    "internal": false,
+    "recorded_today": 120,
+    "session_id": "ses_E1f2G3h4I5j6K7l8M9n0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "rage",
+        "t": 5000,
+        "x": 5000,
+        "y": 5000,
+        "count": 3,
+        "screen": "bookshelf"
+      },
+      {
+        "k": "end",
+        "t": 60000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "buffer",
+    "capture": false,
+    "upload": "none",
+    "priority": [],
+    "previous_session_upload": false,
+    "session_replay": "none"
+  }
+}

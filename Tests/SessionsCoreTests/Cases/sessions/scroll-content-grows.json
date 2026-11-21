@@ -1,0 +1,31 @@
+{
+  "rule": "scroll",
+  "description": "一番下まで見た後に中身が伸びた（続きを読み込んだ）＝深さは下がるが最大の 10000 を残す",
+  "input": {
+    "samples": [
+      {
+        "offset_y": 0,
+        "height": 800,
+        "content_height": 2000
+      },
+      {
+        "offset_y": 1200,
+        "height": 800,
+        "content_height": 2000
+      },
+      {
+        "offset_y": 1200,
+        "height": 800,
+        "content_height": 4000
+      },
+      {
+        "offset_y": 2000,
+        "height": 800,
+        "content_height": 4000
+      }
+    ]
+  },
+  "expect": {
+    "max_ratio": 10000
+  }
+}

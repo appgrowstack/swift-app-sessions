@@ -1,0 +1,28 @@
+{
+  "description": "support の人は手での forget の依頼を承認できる",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_support000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "support",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "people.forget",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

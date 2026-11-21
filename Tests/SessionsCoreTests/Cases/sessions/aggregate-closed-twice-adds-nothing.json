@@ -1,0 +1,174 @@
+{
+  "rule": "aggregate",
+  "description": "もう閉じたセッション（ended_at がある）をもう一度閉じる＝skip で何も足さない",
+  "input": {
+    "session": {
+      "id": "ses_A1b2C3d4E5f6G7h8I9j0",
+      "project": "reading-memory",
+      "person_id": "3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f",
+      "install_id": "3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f",
+      "platform": "ios",
+      "app_version": "1.8.0",
+      "channel": "appstore",
+      "internal": false,
+      "started_at": 1795217400000,
+      "last_at": 1795217700000
+    },
+    "already_closed": true,
+    "person_today": {
+      "screens": [],
+      "paths": []
+    },
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "tap",
+        "t": 8000,
+        "x": 5200,
+        "y": 3100,
+        "screen": "bookshelf"
+      },
+      {
+        "k": "screen",
+        "t": 9000,
+        "screen": "book_detail",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "tap",
+        "t": 15000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "dead",
+        "t": 15000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "tap",
+        "t": 16000,
+        "x": 5000,
+        "y": 8800,
+        "screen": "book_detail"
+      },
+      {
+        "k": "tap",
+        "t": 16300,
+        "x": 5010,
+        "y": 8790,
+        "screen": "book_detail"
+      },
+      {
+        "k": "rage",
+        "t": 16300,
+        "x": 5000,
+        "y": 8800,
+        "count": 3,
+        "screen": "book_detail"
+      },
+      {
+        "k": "tap",
+        "t": 16600,
+        "x": 4990,
+        "y": 8810,
+        "screen": "book_detail"
+      },
+      {
+        "k": "scroll",
+        "t": 20000,
+        "screen": "book_detail",
+        "max_ratio": 6400
+      },
+      {
+        "k": "back",
+        "t": 20000,
+        "screen": "book_detail",
+        "via": "gesture"
+      },
+      {
+        "k": "screen",
+        "t": 20000,
+        "screen": "bookshelf",
+        "via": "pop",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "background",
+        "t": 30000
+      },
+      {
+        "k": "foreground",
+        "t": 90000
+      },
+      {
+        "k": "screen",
+        "t": 95000,
+        "screen": "book_detail",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "back",
+        "t": 96500,
+        "screen": "book_detail",
+        "via": "button"
+      },
+      {
+        "k": "quick_back",
+        "t": 96500,
+        "screen": "book_detail",
+        "ms": 1500
+      },
+      {
+        "k": "screen",
+        "t": 96500,
+        "screen": "bookshelf",
+        "via": "pop",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "background",
+        "t": 120000
+      },
+      {
+        "k": "end",
+        "t": 120000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "skip": true,
+    "screen_day": [],
+    "tap_cell": [],
+    "path_day": [],
+    "path_top": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "description": "viewer は承認できない",
+  "org_humans": 2,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_viewer0000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "viewer",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.approval.decide",
+    "project": "gamification-app"
+  },
+  "approval": {
+    "action": "campaigns.push",
+    "requested_by": "agt_claudecode000001"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

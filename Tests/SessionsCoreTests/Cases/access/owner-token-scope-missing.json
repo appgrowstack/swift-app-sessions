@@ -1,0 +1,30 @@
+{
+  "description": "owner でも ut_ の scope に無い操作は 403 scope_missing（scope が役割を狭める）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "registry.read"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "keys.create",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

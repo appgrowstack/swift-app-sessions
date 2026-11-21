@@ -1,0 +1,191 @@
+{
+  "description": "アプリに入っている画像",
+  "manifest": "gamification-app",
+  "set": {
+    "schema_version": 1,
+    "project": "gamification-app",
+    "version": 7,
+    "published_at": 1765000000000,
+    "policy": {},
+    "targets": {},
+    "campaigns": [
+      {
+        "schema_version": 1,
+        "id": "trial-2days-after-feature",
+        "type": "trial_offer",
+        "status": "active",
+        "title": "機能のペイウォールを閉じた後と、交換の後に、2日間を勧める",
+        "purpose": "2日間を始める割合が holdout より上がるか",
+        "priority": 50,
+        "platforms": [
+          "ios",
+          "android"
+        ],
+        "app_version": {
+          "ios": ">=3.3.0",
+          "android": ">=3.3.0"
+        },
+        "starts_at": "2026-12-01T00:00:00+09:00",
+        "ends_at": null,
+        "triggers": [
+          {
+            "id": "after_paywall",
+            "event": "paywall_closed",
+            "where": {
+              "all": [
+                {
+                  "prop": "result",
+                  "not_in": [
+                    "purchased",
+                    "restored",
+                    "pending"
+                  ]
+                },
+                {
+                  "prop": "source",
+                  "in": [
+                    "habit_limit",
+                    "records_graph",
+                    "widget"
+                  ]
+                }
+              ]
+            },
+            "wait_seconds": 5
+          },
+          {
+            "id": "after_exchange",
+            "event": "exchange_completed",
+            "where": null,
+            "wait_seconds": 600
+          }
+        ],
+        "audience": {
+          "all": [
+            {
+              "fact": "is_premium",
+              "eq": false
+            },
+            {
+              "fact": "has_trial_grant",
+              "eq": false
+            },
+            {
+              "fact": "achieved_days",
+              "gte": 3
+            },
+            {
+              "fact": "trial_eligible",
+              "eq": true
+            }
+          ]
+        },
+        "limits": {
+          "max_shown": 4,
+          "min_hours_between": 24,
+          "after_dismiss_days": 7,
+          "after_action_days": null
+        },
+        "holdout": 0.2,
+        "show": {
+          "placement": "trial_offer",
+          "text_key": "campaign.trial_2days",
+          "values": {
+            "headline": {
+              "ja": "プレミアムを2日間、無料で",
+              "en": "Premium free for 2 days"
+            },
+            "body": {
+              "ja": "習慣をいくつでも・記録のグラフを、2日間使えます。",
+              "en": "Unlimited habits and charts for 2 days."
+            },
+            "primary_label": {
+              "ja": "2日間、無料で試す",
+              "en": "Try free for 2 days"
+            },
+            "secondary_label": {
+              "ja": "あとで",
+              "en": "Not now"
+            },
+            "image": {
+              "asset": "trial_gift"
+            }
+          }
+        },
+        "on_tap": {
+          "action": "start_trial",
+          "args": {}
+        },
+        "goals": [
+          {
+            "event": "purchase_completed",
+            "where": null,
+            "within_hours": 672
+          }
+        ]
+      }
+    ]
+  },
+  "context": {
+    "platform": "ios",
+    "app_version": "3.3.0",
+    "build": "330",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "time_zone": "Asia/Tokyo",
+    "internal_device": false,
+    "days_since_first_seen": 10
+  },
+  "person": "user-6",
+  "fetched_at": "2026-12-10T09:00:00+09:00",
+  "now": "2026-12-10T12:00:00+09:00",
+  "history": {
+    "session_shown": 0,
+    "shown_at": [],
+    "campaigns": {}
+  },
+  "facts": {
+    "is_premium": false,
+    "has_trial_grant": false,
+    "achieved_days": 5,
+    "trial_eligible": true
+  },
+  "texts": {},
+  "images_ready": [],
+  "event": {
+    "name": "paywall_closed",
+    "props": {
+      "result": "continue_free",
+      "source": "habit_limit"
+    }
+  },
+  "expect": {
+    "set_schema_valid": true,
+    "show": "trial-2days-after-feature",
+    "trigger": "after_paywall",
+    "values": {
+      "headline": "プレミアムを2日間、無料で",
+      "body": "習慣をいくつでも・記録のグラフを、2日間使えます。",
+      "primary_label": "2日間、無料で試す",
+      "secondary_label": "あとで",
+      "image": {
+        "asset": "trial_gift"
+      }
+    },
+    "outcomes": {
+      "trial-2days-after-feature": "show"
+    },
+    "records": [
+      {
+        "name": "campaign_eligible",
+        "params": {
+          "campaign": "trial-2days-after-feature",
+          "set_version": 7,
+          "trigger": "after_paywall",
+          "side": "treatment"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "description": "組全体が JSON として読めない",
+  "manifest": "gamification-app",
+  "set_raw": "{\"schema_version\": 1, \"campaigns\": [",
+  "context": {
+    "platform": "ios",
+    "app_version": "3.3.0",
+    "build": "330",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "time_zone": "Asia/Tokyo",
+    "internal_device": false,
+    "days_since_first_seen": 10
+  },
+  "person": "user-6",
+  "fetched_at": "2026-12-10T09:00:00+09:00",
+  "now": "2026-12-10T12:00:00+09:00",
+  "history": {
+    "session_shown": 0,
+    "shown_at": [],
+    "campaigns": {}
+  },
+  "facts": {
+    "is_premium": false,
+    "has_trial_grant": false,
+    "achieved_days": 5,
+    "trial_eligible": true
+  },
+  "texts": {},
+  "images_ready": [],
+  "event": {
+    "name": "paywall_closed",
+    "props": {
+      "result": "continue_free",
+      "source": "habit_limit"
+    }
+  },
+  "expect": {
+    "set_schema_valid": false,
+    "show": null,
+    "trigger": null,
+    "outcomes": {},
+    "records": [
+      {
+        "name": "campaign_rejected",
+        "params": {
+          "campaign": "_set",
+          "set_version": 0,
+          "reason": "parse_error"
+        }
+      }
+    ]
+  }
+}

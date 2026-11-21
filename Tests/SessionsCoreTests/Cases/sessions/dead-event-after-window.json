@@ -1,0 +1,28 @@
+{
+  "rule": "dead",
+  "description": "アプリの出来事が1.5秒を過ぎてから（1501ミリ秒）来た＝dead",
+  "input": {
+    "capturing": true,
+    "tap": {
+      "t": 5000,
+      "x": 5000,
+      "y": 8800,
+      "screen": "book_detail"
+    },
+    "fingerprint_before": "a1b2c3d4",
+    "after": [
+      {
+        "t": 5500,
+        "k": "frame",
+        "fingerprint": "a1b2c3d4"
+      },
+      {
+        "t": 6501,
+        "k": "event"
+      }
+    ]
+  },
+  "expect": {
+    "dead": true
+  }
+}

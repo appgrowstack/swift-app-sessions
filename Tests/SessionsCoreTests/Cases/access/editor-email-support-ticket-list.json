@@ -1,0 +1,24 @@
+{
+  "description": "editor は問い合わせの一覧を見られない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_editor0000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "support.ticket.list",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

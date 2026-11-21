@@ -1,0 +1,16 @@
+{
+  "rule": "scroll",
+  "description": "上の端の跳ね返りだけ（offset -60）＝740 × 10000 / 3000 = 2466.6… を切り捨てて 2466",
+  "input": {
+    "samples": [
+      {
+        "offset_y": -60,
+        "height": 800,
+        "content_height": 3000
+      }
+    ]
+  },
+  "expect": {
+    "max_ratio": 2466
+  }
+}

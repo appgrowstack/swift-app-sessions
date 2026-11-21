@@ -1,0 +1,31 @@
+{
+  "description": "エージェントに admin を付けても外すので、監査は読めない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "admin",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "audit.read"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "audit.read",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

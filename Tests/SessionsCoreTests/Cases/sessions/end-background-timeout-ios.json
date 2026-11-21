@@ -1,0 +1,13 @@
+{
+  "rule": "end",
+  "description": "裏に行ってフラグを消した後に戻らなかった。iOS は払って閉じたのも同じ＝background_timeout",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": false,
+    "last_event": "background"
+  },
+  "expect": {
+    "reason": "background_timeout"
+  }
+}

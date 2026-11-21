@@ -1,0 +1,109 @@
+{
+  "description": "R3 の成果の窓。始まりを含み終わりを含まない。now が終わり以上で counted",
+  "vectors": [
+    {
+      "description": "窓の中に成果がある",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 24,
+        "goal_at": [
+          1765018000000
+        ],
+        "now": 1765172800000
+      },
+      "expect": {
+        "counted": true,
+        "reached": true
+      }
+    },
+    {
+      "description": "窓の始まりちょうどは中",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 24,
+        "goal_at": [
+          1765000000000
+        ],
+        "now": 1765086400000
+      },
+      "expect": {
+        "counted": true,
+        "reached": true
+      }
+    },
+    {
+      "description": "窓の終わりちょうどは外",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 24,
+        "goal_at": [
+          1765086400000
+        ],
+        "now": 1765172800000
+      },
+      "expect": {
+        "counted": true,
+        "reached": false
+      }
+    },
+    {
+      "description": "条件を通る前の成果は数えない",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 24,
+        "goal_at": [
+          1764999999999
+        ],
+        "now": 1765172800000
+      },
+      "expect": {
+        "counted": true,
+        "reached": false
+      }
+    },
+    {
+      "description": "窓がまだ閉じていない人は数えない（中に成果があっても）",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 672,
+        "goal_at": [
+          1765003600000
+        ],
+        "now": 1765360000000
+      },
+      "expect": {
+        "counted": false,
+        "reached": true
+      }
+    },
+    {
+      "description": "窓の終わりちょうどの now は閉じている",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 1,
+        "goal_at": [],
+        "now": 1765003600000
+      },
+      "expect": {
+        "counted": true,
+        "reached": false
+      }
+    },
+    {
+      "description": "順の違う複数の成果",
+      "input": {
+        "first_eligible_at": 1765000000000,
+        "within_hours": 1.5,
+        "goal_at": [
+          1765007200000,
+          1765003600000
+        ],
+        "now": 1765010800000
+      },
+      "expect": {
+        "counted": true,
+        "reached": true
+      }
+    }
+  ]
+}

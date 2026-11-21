@@ -1,0 +1,52 @@
+{
+  "description": "手元の Claude Code は返事の道を呼べない（依頼は下書きを作ること・持ち物の待ち行列）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "registry.read",
+        "campaigns.read",
+        "campaigns.stop",
+        "campaigns.push",
+        "support.ticket.list",
+        "support.ticket.read",
+        "support.reply",
+        "support.redraft",
+        "people.person.read",
+        "links.create",
+        "keys.create",
+        "access.token.issue",
+        "access.token.revoke",
+        "access.approval.read",
+        "access.approval.decide",
+        "audit.read",
+        "people.forget",
+        "notify.variant.approve"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "support.reply",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "forbidden"
+  }
+}

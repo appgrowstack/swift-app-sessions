@@ -1,0 +1,57 @@
+{
+  "rule": "quick_back",
+  "description": "シートを出して1秒で閉じた＝戻る（by が無いので button）。下の画面には via pop で戻る",
+  "input": {
+    "nav": [
+      {
+        "t": 0,
+        "op": "launch",
+        "screen": "book_detail"
+      },
+      {
+        "t": 3000,
+        "op": "sheet",
+        "screen": "book_note"
+      },
+      {
+        "t": 4000,
+        "op": "dismiss",
+        "screen": "book_detail"
+      }
+    ]
+  },
+  "expect": {
+    "events": [
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "book_detail",
+        "via": "launch"
+      },
+      {
+        "k": "screen",
+        "t": 3000,
+        "screen": "book_note",
+        "via": "sheet"
+      },
+      {
+        "k": "back",
+        "t": 4000,
+        "screen": "book_note",
+        "via": "button"
+      },
+      {
+        "k": "quick_back",
+        "t": 4000,
+        "screen": "book_note",
+        "ms": 1000
+      },
+      {
+        "k": "screen",
+        "t": 4000,
+        "screen": "book_detail",
+        "via": "pop"
+      }
+    ]
+  }
+}

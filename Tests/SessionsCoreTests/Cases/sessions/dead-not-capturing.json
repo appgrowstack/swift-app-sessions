@@ -1,0 +1,18 @@
+{
+  "rule": "dead",
+  "description": "録画を撮っていない＝出さない",
+  "input": {
+    "capturing": false,
+    "tap": {
+      "t": 5000,
+      "x": 5000,
+      "y": 8800,
+      "screen": "book_detail"
+    },
+    "fingerprint_before": "a1b2c3d4",
+    "after": []
+  },
+  "expect": {
+    "dead": false
+  }
+}

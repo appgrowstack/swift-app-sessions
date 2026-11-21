@@ -1,0 +1,58 @@
+{
+  "rule": "quick_back",
+  "description": "ちょうど2000ミリ秒で Android の戻るのキー＝quick_back（2000を含む）",
+  "input": {
+    "nav": [
+      {
+        "t": 0,
+        "op": "launch",
+        "screen": "bookshelf"
+      },
+      {
+        "t": 5000,
+        "op": "push",
+        "screen": "book_detail"
+      },
+      {
+        "t": 7000,
+        "op": "pop",
+        "screen": "bookshelf",
+        "by": "system"
+      }
+    ]
+  },
+  "expect": {
+    "events": [
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch"
+      },
+      {
+        "k": "screen",
+        "t": 5000,
+        "screen": "book_detail",
+        "via": "push"
+      },
+      {
+        "k": "back",
+        "t": 7000,
+        "screen": "book_detail",
+        "via": "system"
+      },
+      {
+        "k": "quick_back",
+        "t": 7000,
+        "screen": "book_detail",
+        "ms": 2000
+      },
+      {
+        "k": "screen",
+        "t": 7000,
+        "screen": "bookshelf",
+        "via": "pop"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "rule": "keep_props",
+  "description": "keep_props に無いアプリの出来事＝名前だけ（props は空・props_dropped にはしない）",
+  "input": {
+    "source": "app",
+    "name": "book_added",
+    "props": {
+      "isbn": "9784101010014",
+      "via": "search"
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {},
+    "props_dropped": false
+  }
+}

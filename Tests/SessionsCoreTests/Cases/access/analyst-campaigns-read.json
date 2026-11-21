@@ -1,0 +1,34 @@
+{
+  "description": "分析のエージェントは絞りのプロジェクトの数を読める",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_analyst000000001",
+    "agent_location": "managed",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "viewer",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "campaigns.read",
+        "people.aggregate.read"
+      ],
+      "projects": [
+        "reading-memory"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "campaigns.read",
+    "project": "reading-memory"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "description": "App Store でまだ公開されていないアプリの active は誤り",
+  "manifest": "gamification-app",
+  "campaign_policy": {
+    "max_shown_cap": 4,
+    "holdout_min": 0.2
+  },
+  "stores": {
+    "ios": {
+      "version": null
+    },
+    "android": {
+      "version": "3.3.0"
+    }
+  },
+  "campaigns": [
+    {
+      "schema_version": 1,
+      "status": "active",
+      "priority": 50,
+      "platforms": [
+        "ios",
+        "android"
+      ],
+      "app_version": {
+        "ios": ">=3.3.0",
+        "android": ">=3.3.0"
+      },
+      "starts_at": null,
+      "ends_at": null,
+      "id": "trial-2nd-after-14-days",
+      "type": "trial_offer",
+      "title": "2日間が終わって買わなかった人に、14日後にもう一度だけ2日間を勧める",
+      "purpose": "2回目の2日間を始める割合と28日の購入が holdout より上がるか（C1）",
+      "triggers": [
+        {
+          "id": "after_exchange",
+          "event": "exchange_completed",
+          "where": null,
+          "wait_seconds": 600
+        },
+        {
+          "id": "after_paywall",
+          "event": "paywall_closed",
+          "where": {
+            "prop": "result",
+            "not_in": [
+              "purchased",
+              "restored",
+              "pending"
+            ]
+          },
+          "wait_seconds": 5
+        }
+      ],
+      "audience": {
+        "all": [
+          {
+            "fact": "is_premium",
+            "eq": false
+          },
+          {
+            "fact": "days_since_trial_ended",
+            "gte": 14
+          },
+          {
+            "fact": "trial_eligible",
+            "eq": true
+          }
+        ]
+      },
+      "limits": {
+        "max_shown": 1,
+        "min_hours_between": 24,
+        "after_dismiss_days": 7,
+        "after_action_days": null
+      },
+      "holdout": 0.2,
+      "show": {
+        "placement": "trial_offer",
+        "values": {
+          "headline": {
+            "ja": "もう一度、2日間無料で",
+            "en": "Try Premium again free"
+          },
+          "body": {
+            "ja": "習慣をいくつでも・記録のグラフを、もう一度2日間使えます。料金はかかりません。",
+            "en": "Unlimited habits and charts for 2 more days. No charge."
+          },
+          "primary_label": {
+            "ja": "2日間、無料で試す",
+            "en": "Try free for 2 days"
+          },
+          "secondary_label": {
+            "ja": "あとで",
+            "en": "Not now"
+          }
+        },
+        "text_key": "campaign.trial_2nd"
+      },
+      "on_tap": {
+        "action": "start_trial",
+        "args": {}
+      },
+      "goals": [
+        {
+          "event": "purchase_completed",
+          "where": null,
+          "within_hours": 672
+        },
+        {
+          "event": "reverse_trial_started",
+          "where": null,
+          "within_hours": 1
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "errors": [
+      "active_before_release"
+    ],
+    "warnings": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rule": "scroll",
+  "description": "中身が画面より短い＝10000",
+  "input": {
+    "samples": [
+      {
+        "offset_y": 0,
+        "height": 700,
+        "content_height": 600
+      }
+    ]
+  },
+  "expect": {
+    "max_ratio": 10000
+  }
+}

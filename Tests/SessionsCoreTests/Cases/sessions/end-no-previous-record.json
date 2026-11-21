@@ -1,0 +1,12 @@
+{
+  "rule": "end",
+  "description": "前のセッションの記録が端末に無い（入れ直した直後）＝unknown",
+  "input": {
+    "platform": "ios",
+    "previous_record": false,
+    "running_flag": false
+  },
+  "expect": {
+    "reason": "unknown"
+  }
+}

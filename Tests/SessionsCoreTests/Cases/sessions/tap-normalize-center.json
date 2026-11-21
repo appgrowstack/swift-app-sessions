@@ -1,0 +1,24 @@
+{
+  "rule": "tap_normalize",
+  "description": "iPhone の縦の真ん中＝5000・5000・升 1620",
+  "input": {
+    "tap": {
+      "x": 196.5,
+      "y": 426
+    },
+    "window": {
+      "x": 0,
+      "y": 0,
+      "w": 393,
+      "h": 852
+    }
+  },
+  "expect": {
+    "x": 5000,
+    "y": 5000,
+    "orientation": "portrait",
+    "col": 20,
+    "row": 40,
+    "cell": 1620
+  }
+}

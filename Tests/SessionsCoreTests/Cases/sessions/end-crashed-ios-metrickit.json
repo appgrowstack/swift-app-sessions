@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "フラグが残っていて、起動の時に MetricKit のクラッシュの診断がある＝crashed",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "tap",
+    "metrickit_crash": true
+  },
+  "expect": {
+    "reason": "crashed"
+  }
+}

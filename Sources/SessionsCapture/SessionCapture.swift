@@ -1,0 +1,301 @@
+#if canImport(UIKit)
+import Foundation
+import MetricKit
+import SessionsCore
+import UIKit
+
+/// Feeds an ``AppSessions`` from UIKit: the app going to the back and the front, taps on every
+/// window, the keyboard, the main scroll view's depth, hangs of the main thread and MetricKit's
+/// crash reports. Nothing here stops or delays a touch.
+///
+/// ```swift
+/// let sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")
+/// let capture = SessionCapture(sessions: sessions)
+/// capture.start()          // starts the session too
+/// ```
+@MainActor
+public final class SessionCapture {
+    public let sessions: AppSessions
+    private let store: any SessionStateStore
+    private var observers: [NSObjectProtocol] = []
+    private var timer: Timer?
+    private var hangMonitor: HangMonitor?
+    private let metrics = MetricKitCrashes()
+    private var tickCount = 0
+
+    /// `store` must be the store the recorder uses (the hang monitor marks a hang in it).
+    public init(sessions: AppSessions, store: any SessionStateStore = FileSessionStateStore.standard()) {
+        self.sessions = sessions
+        self.store = store
+    }
+
+    /// Starts the session and the observers. Call once, early in the launch.
+    public func start(watchHangs: Bool = true) {
+        guard observers.isEmpty else { return }
+        sessions.start()
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.sessions.enterBackground() }
+        })
+        observers.append(center.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.sessions.enterForeground() }
+        })
+        observers.append(center.addObserver(forName: UIResponder.keyboardDidShowNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.sessions.keyboard(shown: true) }
+        })
+        observers.append(center.addObserver(forName: UIResponder.keyboardDidHideNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.sessions.keyboard(shown: false) }
+        })
+        observers.append(center.addObserver(forName: UIWindow.didBecomeKeyNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                for window in Self.windows() { self?.attach(to: window) }
+            }
+        })
+        for window in Self.windows() { attach(to: window) }
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.everyHalfSecond() }
+        }
+        if watchHangs {
+            let monitor = HangMonitor(sessions: sessions, store: store)
+            monitor.start()
+            hangMonitor = monitor
+        }
+        metrics.onCrash = { [weak self] periodEnd in
+            // A report whose period ended before the previous session started is about an older run.
+            guard let self, let previous = self.sessions.previousSessionStartedAt, periodEnd >= previous else { return }
+            self.sessions.previousSessionCrashReported()
+        }
+        MXMetricManager.shared.add(metrics)
+    }
+
+    public func stop() {
+        observers.forEach(NotificationCenter.default.removeObserver)
+        observers = []
+        timer?.invalidate()
+        timer = nil
+        hangMonitor?.stop()
+        hangMonitor = nil
+        MXMetricManager.shared.remove(metrics)
+    }
+
+    private func attach(to window: UIWindow) {
+        guard !Self.isSystemWindow(window),
+              !(window.gestureRecognizers ?? []).contains(where: { $0 is SessionTapRecognizer }) else { return }
+        let recognizer = SessionTapRecognizer { [weak self, weak window] point in
+            guard let self, let window else { return }
+            self.tapped(at: point, in: window)
+        }
+        window.addGestureRecognizer(recognizer)
+    }
+
+    private func tapped(at point: CGPoint, in window: UIWindow) {
+        let space = window.screen.coordinateSpace
+        let frame = window.convert(window.bounds, to: space)
+        let onScreen = window.convert(point, to: space)
+        sessions.tap(x: onScreen.x, y: onScreen.y,
+                     window: SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height),
+                     target: SessionMarkerView.target(at: point, in: window))
+    }
+
+    private func everyHalfSecond() {
+        if let window = Self.keyWindow() {
+            let frame = window.convert(window.bounds, to: window.screen.coordinateSpace)
+            sessions.updateWindow(SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height))
+            if let scrollView = Self.mainScrollView(in: window) {
+                sessions.scroll(.init(offsetY: scrollView.contentOffset.y + scrollView.adjustedContentInset.top,
+                                      height: scrollView.bounds.height - scrollView.adjustedContentInset.top,
+                                      contentHeight: scrollView.contentSize.height))
+            }
+        }
+        tickCount += 1
+        if tickCount % 10 == 0 { sessions.tick() }
+    }
+
+    // MARK: - Windows and views
+
+    static func windows() -> [UIWindow] {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows)
+    }
+
+    static func keyWindow() -> UIWindow? {
+        windows().first { $0.isKeyWindow }
+    }
+
+    /// The keyboard's and the system's own windows.
+    static func isSystemWindow(_ window: UIWindow) -> Bool {
+        let name = NSStringFromClass(type(of: window))
+        return name.contains("Keyboard") || name.contains("TextEffects")
+    }
+
+    /// The largest visible scroll view that scrolls up and down, outside lists marked `.sessionScroll`.
+    static func mainScrollView(in window: UIWindow) -> UIScrollView? {
+        var best: (UIScrollView, CGFloat)?
+        func visit(_ view: UIView) {
+            if view.isHidden || view.alpha < 0.01 { return }
+            if let scroll = view as? UIScrollView, !(view is UITextView),
+               scroll.contentSize.height > 0, scroll.bounds.width > window.bounds.width * 0.5 {
+                let area = scroll.bounds.width * scroll.bounds.height
+                if area > (best?.1 ?? 0) { best = (scroll, area) }
+            }
+            view.subviews.forEach(visit)
+        }
+        visit(window)
+        return best?.0
+    }
+}
+
+/// Reports where a finger left the window and never recognizes anything, so every touch goes on
+/// to the app as if it were not there.
+final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
+    private let report: @MainActor (CGPoint) -> Void
+    private var startedAt: CGPoint?
+
+    init(report: @escaping @MainActor (CGPoint) -> Void) {
+        self.report = report
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+        delegate = self
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        if startedAt == nil, let touch = touches.first { startedAt = touch.location(in: view) }
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        if let touch = touches.first, let start = startedAt {
+            let end = touch.location(in: view)
+            // A drag is a scroll, not a tap.
+            if hypot(end.x - start.x, end.y - start.y) < 10 { report(end) }
+        }
+        startedAt = nil
+        state = .failed
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        startedAt = nil
+        state = .failed
+    }
+
+    override func reset() {
+        startedAt = nil
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
+}
+
+/// A view that marks a part of the screen: a named tap target (`.sessionTarget`), or something to
+/// hide from the recording (`.sessionMask`). It draws nothing and takes no touches.
+public final class SessionMarkerView: UIView {
+    public enum Kind: Equatable, Sendable {
+        case target(String)
+        case mask
+    }
+
+    public var kind: Kind
+
+    public init(kind: Kind) {
+        self.kind = kind
+        super.init(frame: .zero)
+        isUserInteractionEnabled = false
+        backgroundColor = .clear
+        isAccessibilityElement = false
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+
+    /// The name of the smallest target under `point` (window coordinates).
+    static func target(at point: CGPoint, in window: UIWindow) -> String? {
+        var best: (String, CGFloat)?
+        func visit(_ view: UIView) {
+            if view.isHidden { return }
+            if let marker = view as? SessionMarkerView, case .target(let name) = marker.kind {
+                let frame = marker.convert(marker.bounds, to: window)
+                if frame.contains(point) {
+                    let area = frame.width * frame.height
+                    if area < (best?.1 ?? .greatestFiniteMagnitude) { best = (name, area) }
+                }
+            }
+            view.subviews.forEach(visit)
+        }
+        visit(window)
+        return best?.0
+    }
+
+    /// The frames of every `.sessionMask()` in `window` (window coordinates).
+    public static func maskFrames(in window: UIWindow) -> [CGRect] {
+        var frames: [CGRect] = []
+        func visit(_ view: UIView) {
+            if view.isHidden { return }
+            if let marker = view as? SessionMarkerView, marker.kind == .mask {
+                frames.append(marker.convert(marker.bounds, to: window))
+            }
+            view.subviews.forEach(visit)
+        }
+        visit(window)
+        return frames
+    }
+}
+
+/// MetricKit's crash reports. They arrive on a background queue some time after the launch.
+final class MetricKitCrashes: NSObject, MXMetricManagerSubscriber, @unchecked Sendable {
+    /// When the crash report's period ended (milliseconds since 1970).
+    @MainActor var onCrash: ((Int) -> Void)?
+
+    func didReceive(_ payloads: [MXDiagnosticPayload]) {
+        let crashes = payloads.filter { !($0.crashDiagnostics ?? []).isEmpty }
+        guard let latest = crashes.max(by: { $0.timeStampEnd < $1.timeStampEnd }) else { return }
+        let end = Int(latest.timeStampEnd.timeIntervalSince1970 * 1000)
+        Task { @MainActor in self.onCrash?(end) }
+    }
+}
+
+extension SessionDeviceInfo {
+    /// The device and the app as UIKit and the main bundle see them.
+    /// `channel` is `appstore`, `testflight` or `debug`.
+    @MainActor
+    public static func current(channel: String, uid: String? = nil, installID: String? = nil) -> SessionDeviceInfo {
+        let bundle = Bundle.main
+        let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0"
+        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+        let screen = SessionCapture.keyWindow()?.screen ?? UIScreen.main
+        let locale = Locale.current
+        var lang = locale.language.languageCode?.identifier ?? "en"
+        if let script = locale.language.script?.identifier, lang == "zh" { lang += "-\(script)" }
+        let region = locale.region?.identifier.uppercased() ?? "ZZ"
+        return SessionDeviceInfo(
+            installID: installID, uid: uid, platform: .ios,
+            appVersion: version.range(of: #"^\d+\.\d+(\.\d+)?$"#, options: .regularExpression) != nil ? version : "0.0",
+            build: String(build.prefix(32)), channel: channel, lang: lang,
+            region: region.range(of: "^[A-Z0-9]{2,3}$", options: .regularExpression) != nil ? region : "ZZ",
+            timeZone: TimeZone.current.identifier, osVersion: UIDevice.current.systemVersion,
+            deviceModel: modelIdentifier(),
+            screen: .init(w: screen.bounds.width, h: screen.bounds.height, scale: screen.scale))
+    }
+
+    /// `iPhone17,1`. On the simulator, the simulated model.
+    static func modelIdentifier() -> String {
+        if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] { return simulated }
+        var info = utsname()
+        uname(&info)
+        let identifier = withUnsafeBytes(of: &info.machine) { raw in
+            String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+        }
+        return identifier.isEmpty ? "unknown" : String(identifier.prefix(64))
+    }
+}
+
+extension AppSessions {
+    /// A recorder fed with UIKit's values for the device (``SessionDeviceInfo/current(channel:uid:installID:)``).
+    public convenience init(sink: any SessionSink, channel: String,
+                            store: any SessionStateStore = FileSessionStateStore.standard(),
+                            configuration: Configuration = .init(),
+                            uid: @escaping @MainActor () -> String? = { nil }) {
+        self.init(sink: sink, deviceInfo: { SessionDeviceInfo.current(channel: channel, uid: uid()) },
+                  store: store, configuration: configuration)
+    }
+}
+#endif

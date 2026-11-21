@@ -1,0 +1,39 @@
+{
+  "rule": "split",
+  "description": "裏に30分ちょうどいて戻る＝新しいセッション。前のセッションの終わりは裏に行った時刻",
+  "input": {
+    "steps": [
+      {
+        "t": 1795230000000,
+        "k": "launch"
+      },
+      {
+        "t": 1795230060000,
+        "k": "background"
+      },
+      {
+        "t": 1795231860000,
+        "k": "foreground"
+      }
+    ]
+  },
+  "expect": {
+    "session_of_step": [
+      0,
+      0,
+      1
+    ],
+    "sessions": [
+      {
+        "start": 1795230000000,
+        "end": 1795230060000,
+        "by": "background_timeout"
+      },
+      {
+        "start": 1795231860000,
+        "end": null,
+        "by": null
+      }
+    ]
+  }
+}

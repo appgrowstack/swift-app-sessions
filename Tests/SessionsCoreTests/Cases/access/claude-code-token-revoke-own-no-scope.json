@@ -1,0 +1,36 @@
+{
+  "description": "自分のトークンの取り消しも、scope に access.token.revoke が無ければ 403 scope_missing",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "registry.read"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "access.token.revoke",
+    "project": null,
+    "own_token": true
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

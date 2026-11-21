@@ -1,0 +1,14 @@
+{
+  "rule": "end",
+  "description": "最後の出来事が hang でも、クラッシュの診断があれば crashed（クラッシュを先に見る）",
+  "input": {
+    "platform": "ios",
+    "previous_record": true,
+    "running_flag": true,
+    "last_event": "hang",
+    "metrickit_crash": true
+  },
+  "expect": {
+    "reason": "crashed"
+  }
+}

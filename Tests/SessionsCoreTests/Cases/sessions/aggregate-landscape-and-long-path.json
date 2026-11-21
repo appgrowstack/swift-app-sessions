@@ -1,0 +1,363 @@
+{
+  "rule": "aggregate",
+  "description": "横向きの画面のタップは landscape の升。6画面を通ったので path_top は最初の5画面で ended_here 0。同じ画面が続く所はまとめる",
+  "input": {
+    "session": {
+      "id": "ses_A1b2C3d4E5f6G7h8I9j0",
+      "project": "reading-memory",
+      "person_id": "3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f",
+      "install_id": "3f2a9c1e-7b4d-4e8a-9c2f-1a2b3c4d5e6f",
+      "platform": "ios",
+      "app_version": "1.8.0",
+      "channel": "appstore",
+      "internal": false,
+      "started_at": 1795217400000,
+      "last_at": 1795217700000
+    },
+    "already_closed": false,
+    "person_today": {
+      "screens": [],
+      "paths": []
+    },
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 1000,
+        "screen": "bookshelf",
+        "via": "tab",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 2000,
+        "screen": "book_detail",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 3000,
+        "screen": "book_reader",
+        "via": "push",
+        "w": 852,
+        "h": 393,
+        "orientation": "landscape"
+      },
+      {
+        "k": "tap",
+        "t": 3500,
+        "x": 9000,
+        "y": 500,
+        "screen": "book_reader"
+      },
+      {
+        "k": "screen",
+        "t": 5000,
+        "screen": "book_note",
+        "via": "sheet",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 7000,
+        "screen": "settings",
+        "via": "tab",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "screen",
+        "t": 9000,
+        "screen": "support_form",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "end",
+        "t": 12000,
+        "reason": "user_closed"
+      }
+    ]
+  },
+  "expect": {
+    "skip": false,
+    "session": {
+      "ended_at": 1795217412000,
+      "end_reason": "user_closed",
+      "duration_ms": 12000,
+      "screens": 7,
+      "taps": 1,
+      "rage": 0,
+      "dead": 0,
+      "quick_backs": 0,
+      "backs": 0,
+      "entry_screen": "bookshelf",
+      "exit_screen": "support_form"
+    },
+    "screen_day": [
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "book_detail",
+        "views": 1,
+        "people": 1,
+        "exits": 0,
+        "end_reasons": {},
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 0,
+        "dwell_ms": [
+          1000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "book_note",
+        "views": 1,
+        "people": 1,
+        "exits": 0,
+        "end_reasons": {},
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 0,
+        "dwell_ms": [
+          2000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "book_reader",
+        "views": 1,
+        "people": 1,
+        "exits": 0,
+        "end_reasons": {},
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 1,
+        "dwell_ms": [
+          2000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "bookshelf",
+        "views": 2,
+        "people": 1,
+        "exits": 0,
+        "end_reasons": {},
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 0,
+        "dwell_ms": [
+          1000,
+          1000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "settings",
+        "views": 1,
+        "people": 1,
+        "exits": 0,
+        "end_reasons": {},
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 0,
+        "dwell_ms": [
+          2000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "support_form",
+        "views": 1,
+        "people": 1,
+        "exits": 1,
+        "end_reasons": {
+          "user_closed": 1
+        },
+        "quick_backs": 0,
+        "backs": 0,
+        "rage": 0,
+        "dead": 0,
+        "taps": 0,
+        "dwell_ms": [
+          3000
+        ],
+        "scroll_hist": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "tap_cell": [
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "screen": "book_reader",
+        "orientation": "landscape",
+        "cell": 196,
+        "taps": 1,
+        "rage": 0,
+        "dead": 0
+      }
+    ],
+    "path_day": [
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "from_screen": "book_detail",
+        "to_screen": "book_reader",
+        "count": 1,
+        "people": 1
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "from_screen": "book_note",
+        "to_screen": "settings",
+        "count": 1,
+        "people": 1
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "from_screen": "book_reader",
+        "to_screen": "book_note",
+        "count": 1,
+        "people": 1
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "from_screen": "bookshelf",
+        "to_screen": "book_detail",
+        "count": 1,
+        "people": 1
+      },
+      {
+        "day": "2026-11-20",
+        "platform": "ios",
+        "from_screen": "settings",
+        "to_screen": "support_form",
+        "count": 1,
+        "people": 1
+      }
+    ],
+    "path_top": [
+      {
+        "day": "2026-11-20",
+        "path": "bookshelf>book_detail>book_reader>book_note>settings",
+        "count": 1,
+        "ended_here": 0
+      }
+    ]
+  }
+}

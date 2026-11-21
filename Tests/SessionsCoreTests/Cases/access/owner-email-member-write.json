@@ -1,0 +1,24 @@
+{
+  "description": "owner が所属を変える（本人の確認つき・1人の組織）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "access_email",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ]
+  },
+  "operation": {
+    "permission": "access.member.write",
+    "project": null
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": true
+  }
+}

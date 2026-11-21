@@ -1,0 +1,58 @@
+{
+  "rule": "quick_back",
+  "description": "本の詳しい画面に入って1.5秒で端から払って戻った＝back と quick_back",
+  "input": {
+    "nav": [
+      {
+        "t": 0,
+        "op": "launch",
+        "screen": "bookshelf"
+      },
+      {
+        "t": 5000,
+        "op": "push",
+        "screen": "book_detail"
+      },
+      {
+        "t": 6500,
+        "op": "pop",
+        "screen": "bookshelf",
+        "by": "gesture"
+      }
+    ]
+  },
+  "expect": {
+    "events": [
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch"
+      },
+      {
+        "k": "screen",
+        "t": 5000,
+        "screen": "book_detail",
+        "via": "push"
+      },
+      {
+        "k": "back",
+        "t": 6500,
+        "screen": "book_detail",
+        "via": "gesture"
+      },
+      {
+        "k": "quick_back",
+        "t": 6500,
+        "screen": "book_detail",
+        "ms": 1500
+      },
+      {
+        "k": "screen",
+        "t": 6500,
+        "screen": "bookshelf",
+        "via": "pop"
+      }
+    ]
+  }
+}

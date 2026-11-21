@@ -1,0 +1,32 @@
+{
+  "rule": "keep_props",
+  "description": "campaign_ で始まる出来事＝全部残す（contracts 6.6節の引数）",
+  "input": {
+    "source": "app",
+    "name": "campaign_shown",
+    "props": {
+      "campaign": "trial-2nd",
+      "placement": "home_banner",
+      "side": "treatment",
+      "set_version": 12
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "campaign": "trial-2nd",
+      "placement": "home_banner",
+      "side": "treatment",
+      "set_version": 12
+    },
+    "props_dropped": false
+  }
+}

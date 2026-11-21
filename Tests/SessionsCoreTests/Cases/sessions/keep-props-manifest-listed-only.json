@@ -1,0 +1,28 @@
+{
+  "rule": "keep_props",
+  "description": "keep_props にあるアプリの出来事＝書いた名前（view）だけ",
+  "input": {
+    "source": "app",
+    "name": "memo_created",
+    "props": {
+      "view": "list",
+      "length": 120,
+      "has_photo": true
+    },
+    "keep_props": {
+      "memo_created": [
+        "view"
+      ],
+      "note_view_changed": [
+        "from",
+        "to"
+      ]
+    }
+  },
+  "expect": {
+    "props": {
+      "view": "list"
+    },
+    "props_dropped": false
+  }
+}

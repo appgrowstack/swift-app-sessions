@@ -1,0 +1,67 @@
+{
+  "rule": "sampling",
+  "description": "3: 本人とテスターの端末＝sample 0・上限0でもいつも送る（式を計算しない）",
+  "input": {
+    "project": "reading-memory",
+    "feature": "on",
+    "replay": {
+      "enabled": true,
+      "sample": 0,
+      "daily_cap": 0
+    },
+    "internal": true,
+    "recorded_today": 120,
+    "session_id": "ses_A1b2C3d4E5f6G7h8I9j0",
+    "events": [
+      {
+        "k": "start",
+        "t": 0,
+        "previous_end": "background_timeout",
+        "first": false
+      },
+      {
+        "k": "screen",
+        "t": 0,
+        "screen": "bookshelf",
+        "via": "launch",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "tap",
+        "t": 8000,
+        "x": 5200,
+        "y": 3100,
+        "screen": "bookshelf"
+      },
+      {
+        "k": "screen",
+        "t": 9000,
+        "screen": "book_detail",
+        "via": "push",
+        "w": 393,
+        "h": 852,
+        "orientation": "portrait"
+      },
+      {
+        "k": "background",
+        "t": 180000
+      },
+      {
+        "k": "end",
+        "t": 180000,
+        "reason": "background_timeout"
+      }
+    ]
+  },
+  "expect": {
+    "accept": true,
+    "answer": "record",
+    "capture": true,
+    "upload": "all",
+    "priority": [],
+    "previous_session_upload": false,
+    "session_replay": "record"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "description": "エージェントは自分のトークンの回しを依頼できる（役割の owner は要らない）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "registry.read",
+        "campaigns.read",
+        "campaigns.stop",
+        "campaigns.push",
+        "support.ticket.list",
+        "support.ticket.read",
+        "support.reply",
+        "support.redraft",
+        "people.person.read",
+        "links.create",
+        "keys.create",
+        "access.token.issue",
+        "access.token.revoke",
+        "access.approval.read",
+        "access.approval.decide",
+        "audit.read",
+        "people.forget",
+        "notify.variant.approve"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "access.token.issue",
+    "project": null,
+    "own_token": true
+  },
+  "expect": {
+    "result": "pending_approval",
+    "status": 202
+  }
+}
