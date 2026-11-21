@@ -85,7 +85,7 @@ public struct SessionDeviceInfo: Sendable, Equatable {
 
     public init(installID: String? = nil, uid: String? = nil, platform: SessionPlatform = .ios, appVersion: String,
                 build: String, channel: String, lang: String, region: String, timeZone: String, osVersion: String,
-                deviceModel: String, screen: SessionDevice.Screen, sdkVersion: String = SessionsVersion.current) {
+                deviceModel: String, screen: SessionDevice.Screen, sdkVersion: String = SessionsSDK.version) {
         self.installID = installID
         self.uid = uid
         self.platform = platform
@@ -140,7 +140,3 @@ public protocol SessionSink: Sendable {
     func send(_ batch: SessionBatch) async throws -> SessionSinkReply
 }
 
-public enum SessionsVersion {
-    /// This package's version, sent as `sdk_version`.
-    public static let current = "0.1.0"
-}

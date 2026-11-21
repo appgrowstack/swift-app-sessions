@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-21
+
 ### Added
 
+- `SessionsSDK.name` and `SessionsSDK.version`. The version is sent as `sdk_version`, and a connector
+  reports both when it sends batches.
 - The light record: `AppSessions` splits sessions (launch, 30 minutes in the background), records
   screens with `via`, `back` and `quick_back`, taps (0–10000 of the window, `.sessionTarget`), rage
   taps, scroll depth, the keyboard, app events with kept props, marks, hangs and the end reason
