@@ -17,6 +17,9 @@
           "ios",
           "android"
         ],
+        "requires": [
+          "feature:auto_check"
+        ],
         "app_version": {
           "ios": {
             "min": "3.3.0",
@@ -37,10 +40,7 @@
           {
             "id": "updated",
             "event": "app_updated",
-            "where": {
-              "prop": "to_version",
-              "eq": "3.3.0"
-            },
+            "where": null,
             "wait_seconds": 30
           }
         ],

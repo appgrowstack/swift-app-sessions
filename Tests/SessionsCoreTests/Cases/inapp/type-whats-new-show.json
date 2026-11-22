@@ -1,5 +1,5 @@
 {
-  "description": "whats_new: 3.3.0 に上がった最初の起動で、お知らせの1枚を出す",
+  "description": "whats_new: 3.2.3 から範囲の min の 3.3.0 に上がった最初の起動で、お知らせの1枚を出す",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -16,6 +16,9 @@
         "platforms": [
           "ios",
           "android"
+        ],
+        "requires": [
+          "feature:auto_check"
         ],
         "app_version": {
           "ios": {
@@ -37,10 +40,7 @@
           {
             "id": "updated",
             "event": "app_updated",
-            "where": {
-              "prop": "to_version",
-              "eq": "3.3.0"
-            },
+            "where": null,
             "wait_seconds": 30
           }
         ],

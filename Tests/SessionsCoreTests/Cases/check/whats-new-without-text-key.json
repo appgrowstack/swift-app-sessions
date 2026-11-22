@@ -13,6 +13,7 @@
         "capabilities": [
           "event:app_updated",
           "event:auto_check_enabled",
+          "feature:auto_check",
           "placement:whats_new"
         ]
       }
@@ -24,6 +25,7 @@
         "capabilities": [
           "event:app_updated",
           "event:auto_check_enabled",
+          "feature:auto_check",
           "placement:whats_new"
         ]
       }
@@ -38,6 +40,9 @@
         "ios",
         "android"
       ],
+      "requires": [
+        "feature:auto_check"
+      ],
       "starts_at": null,
       "ends_at": null,
       "id": "whats-new-3-3-0-auto-check",
@@ -48,10 +53,7 @@
         {
           "id": "updated",
           "event": "app_updated",
-          "where": {
-            "prop": "to_version",
-            "eq": "3.3.0"
-          },
+          "where": null,
           "wait_seconds": 30
         }
       ],

@@ -49,6 +49,10 @@
             {
               "fact": "days_since_first_seen",
               "gte": 7
+            },
+            {
+              "fact": "version_age_days",
+              "gte": 3
             }
           ]
         },
@@ -97,7 +101,15 @@
         ]
       }
     ],
-    "releases": {}
+    "releases": {
+      "ios": [
+        {
+          "version": "3.4.0",
+          "released_at": 1796007600000,
+          "halted": false
+        }
+      ]
+    }
   },
   "context": {
     "platform": "ios",

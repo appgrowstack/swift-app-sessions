@@ -1,5 +1,5 @@
 {
-  "description": "whats_new: 3.3.1 に上がった起動では当たらない（to_version で決める）",
+  "description": "whats_new: from_version は端末の OS の範囲の min と比べる。Android の min が 3.3.1 なら、3.3.0 から 3.3.1 に上がった人に出す",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -17,13 +17,16 @@
           "ios",
           "android"
         ],
+        "requires": [
+          "feature:auto_check"
+        ],
         "app_version": {
           "ios": {
             "min": "3.3.0",
             "exclude": []
           },
           "android": {
-            "min": "3.3.0",
+            "min": "3.3.1",
             "exclude": []
           }
         },
@@ -37,10 +40,7 @@
           {
             "id": "updated",
             "event": "app_updated",
-            "where": {
-              "prop": "to_version",
-              "eq": "3.3.0"
-            },
+            "where": null,
             "wait_seconds": 30
           }
         ],
@@ -85,10 +85,10 @@
     "releases": {}
   },
   "context": {
-    "platform": "ios",
+    "platform": "android",
     "app_version": "3.3.1",
-    "build": "330",
-    "channel": "appstore",
+    "build": "331",
+    "channel": "play",
     "lang": "ja",
     "region": "JP",
     "time_zone": "Asia/Tokyo",
@@ -120,11 +120,28 @@
   },
   "expect": {
     "set_schema_valid": true,
-    "show": null,
-    "trigger": null,
-    "outcomes": {
-      "whats-new-3-3-0-auto-check": "no_trigger"
+    "show": "whats-new-3-3-0-auto-check",
+    "trigger": "updated",
+    "values": {
+      "headline": "押さなくても、達成に",
+      "body": "歩数・運動・睡眠の習慣は、やった日に自動で達成になります。",
+      "primary_label": "設定する"
     },
-    "records": []
+    "outcomes": {
+      "whats-new-3-3-0-auto-check": "show"
+    },
+    "records": [
+      {
+        "name": "campaign_eligible",
+        "params": {
+          "campaign": "whats-new-3-3-0-auto-check",
+          "set_version": 7,
+          "trigger": "updated",
+          "side": "treatment",
+          "propensity": 0.9,
+          "policy_version": 7
+        }
+      }
+    ]
   }
 }

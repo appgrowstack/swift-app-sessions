@@ -1,0 +1,171 @@
+{
+  "description": "whats_new: 3.3.0 から 3.3.1 に上がった起動では当たらない。上がる前のバージョンが範囲の min（3.3.0）以上で、前から中身を持っていた",
+  "manifest": "gamification-app",
+  "set": {
+    "schema_version": 1,
+    "project": "gamification-app",
+    "version": 7,
+    "published_at": 1765000000000,
+    "policy": {},
+    "targets": {},
+    "campaigns": [
+      {
+        "schema_version": 1,
+        "status": "active",
+        "priority": 50,
+        "platforms": [
+          "ios",
+          "android"
+        ],
+        "requires": [
+          "feature:auto_check"
+        ],
+        "app_version": {
+          "ios": {
+            "min": "3.3.0",
+            "exclude": []
+          },
+          "android": {
+            "min": "3.3.0",
+            "exclude": []
+          }
+        },
+        "starts_at": null,
+        "ends_at": null,
+        "id": "whats-new-3-3-0-auto-check",
+        "type": "whats_new",
+        "title": "3.3.0 の最初の起動で、自動の達成を知らせる",
+        "purpose": "知らせた人のうち、7日以内に自動の達成を入れた割合が holdout より上がるか",
+        "triggers": [
+          {
+            "id": "updated",
+            "event": "app_updated",
+            "where": null,
+            "wait_seconds": 30
+          }
+        ],
+        "audience": null,
+        "limits": {
+          "max_shown": 1,
+          "min_hours_between": 0,
+          "after_dismiss_days": 0,
+          "after_action_days": null
+        },
+        "holdout": 0.1,
+        "show": {
+          "placement": "whats_new",
+          "values": {
+            "headline": {
+              "ja": "押さなくても、達成に",
+              "en": "Done without a tap"
+            },
+            "body": {
+              "ja": "歩数・運動・睡眠の習慣は、やった日に自動で達成になります。",
+              "en": "Steps, workouts and sleep now count on their own."
+            },
+            "primary_label": {
+              "ja": "設定する",
+              "en": "Set up"
+            }
+          },
+          "text_key": "campaign.whats_new_330"
+        },
+        "on_tap": {
+          "link": "https://gohobishukan.com/app/settings/auto-check/"
+        },
+        "goals": [
+          {
+            "event": "auto_check_enabled",
+            "where": null,
+            "within_hours": 168
+          }
+        ]
+      }
+    ],
+    "releases": {}
+  },
+  "context": {
+    "platform": "ios",
+    "app_version": "3.3.1",
+    "build": "330",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "time_zone": "Asia/Tokyo",
+    "internal_device": false,
+    "days_since_first_seen": 10
+  },
+  "person": "user-1",
+  "fetched_at": "2026-12-10T09:00:00+09:00",
+  "now": "2026-12-10T12:00:00+09:00",
+  "history": {
+    "session_shown": 0,
+    "shown_at": [],
+    "campaigns": {}
+  },
+  "facts": {
+    "is_premium": false,
+    "has_trial_grant": false,
+    "achieved_days": 5,
+    "trial_eligible": true
+  },
+  "texts": {},
+  "images_ready": [],
+  "event": {
+    "name": "app_updated",
+    "props": {
+      "from_version": "3.3.0",
+      "to_version": "3.3.1"
+    }
+  },
+  "expect": {
+    "set_schema_valid": true,
+    "show": null,
+    "trigger": null,
+    "outcomes": {
+      "whats-new-3-3-0-auto-check": "no_trigger"
+    },
+    "records": [],
+    "trace": [
+      {
+        "campaign": "whats-new-3-3-0-auto-check",
+        "set_version": 7,
+        "event": {
+          "name": "app_updated",
+          "at": "2026-12-10T12:00:00+09:00"
+        },
+        "outcome": "no_trigger",
+        "steps": [
+          {
+            "step": 1,
+            "name": "fresh",
+            "result": "pass"
+          },
+          {
+            "step": 2,
+            "name": "readable",
+            "result": "pass"
+          },
+          {
+            "step": 3,
+            "name": "active",
+            "result": "pass"
+          },
+          {
+            "step": 4,
+            "name": "trigger",
+            "result": "stop",
+            "detail": {
+              "triggers": [
+                {
+                  "trigger": "updated",
+                  "result": "already_had"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -62,6 +62,10 @@
           {
             "fact": "days_since_first_seen",
             "gte": 7
+          },
+          {
+            "fact": "version_age_days",
+            "gte": 3
           }
         ]
       },

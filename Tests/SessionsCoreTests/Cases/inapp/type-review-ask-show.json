@@ -1,5 +1,5 @@
 {
-  "description": "review_ask: 3回目の交換の後に OS の評価の窓（kind system）を出す。値は無い",
+  "description": "review_ask: 3回目の交換の後に OS の評価の窓（kind system）を出す。値は無い。今のバージョンは公開から3日（version_age_days 3）",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -49,6 +49,10 @@
             {
               "fact": "days_since_first_seen",
               "gte": 7
+            },
+            {
+              "fact": "version_age_days",
+              "gte": 3
             }
           ]
         },
@@ -97,7 +101,20 @@
         ]
       }
     ],
-    "releases": {}
+    "releases": {
+      "ios": [
+        {
+          "version": "3.3.0",
+          "released_at": 1796612399000,
+          "halted": false
+        },
+        {
+          "version": "3.2.3",
+          "released_at": 1793415600000,
+          "halted": false
+        }
+      ]
+    }
   },
   "context": {
     "platform": "ios",
