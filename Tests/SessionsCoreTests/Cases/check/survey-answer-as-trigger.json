@@ -56,7 +56,13 @@
         "max_shown": 1,
         "min_hours_between": 0,
         "after_dismiss_days": 30,
-        "after_action_days": null
+        "after_action_days": null,
+        "not_after_in_launch": [
+          {
+            "event": "paywall_closed",
+            "where": null
+          }
+        ]
       },
       "holdout": 0,
       "show": {
@@ -144,7 +150,13 @@
         "max_shown": 1,
         "min_hours_between": 0,
         "after_dismiss_days": 30,
-        "after_action_days": null
+        "after_action_days": null,
+        "not_after_in_launch": [
+          {
+            "event": "paywall_closed",
+            "where": null
+          }
+        ]
       },
       "holdout": 0,
       "show": {
