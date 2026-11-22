@@ -1,0 +1,28 @@
+{
+  "description": "本人の ut_ でも、役割に従うトークン（scopes が null）からは段階3（本文）を読めない。Access の email のログインは読める（owner-email-support-ticket-read）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

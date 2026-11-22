@@ -1,0 +1,36 @@
+{
+  "description": "手元の Claude Code は、役割に従うトークンに level3_scopes で足した段階3（本文）を読める（local_only）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "level3_scopes": [
+        "support.ticket.read"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

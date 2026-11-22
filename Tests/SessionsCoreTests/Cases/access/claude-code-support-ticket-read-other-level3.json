@@ -1,0 +1,36 @@
+{
+  "description": "level3_scopes の insights.sql は、ほかの段階3（問い合わせの本文）を許さない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "level3_scopes": [
+        "insights.sql"
+      ],
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "support.ticket.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

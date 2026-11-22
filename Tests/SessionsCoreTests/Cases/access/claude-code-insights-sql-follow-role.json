@@ -1,0 +1,33 @@
+{
+  "description": "役割に従うだけのトークン（level3_scopes が無い）は insights.sql（段階3）を使えない",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "insights.sql",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}
