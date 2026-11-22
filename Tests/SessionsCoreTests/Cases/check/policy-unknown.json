@@ -2,13 +2,41 @@
   "description": "R1 を読めなければ campaign_policy を確かめず、警告を1つだけ出す",
   "manifest": "gamification-app",
   "campaign_policy": null,
-  "stores": {
-    "ios": {
-      "version": "3.3.0"
-    },
-    "android": {
-      "version": "3.3.0"
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -19,10 +47,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0",
-        "android": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",

@@ -1,17 +1,77 @@
 {
-  "description": "channels に appstore だけがあれば iOS だけを見る（play の無い件は Android を見ない）",
+  "description": "機能のキーを持つ 3.4.0 が両方の OS で公開済み。3.3.0 には無いので、範囲は 3.4.0 から（誤りも警告も無い）",
   "manifest": "gamification-app",
   "campaign_policy": {
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {
-    "ios": {
-      "version": "3.2.3"
-    },
-    "android": {
-      "version": null
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "replaced",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      },
+      {
+        "version": "3.4.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "feature:trial_again",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      },
+      {
+        "version": "3.4.0",
+        "store_state": "rolling_out",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "feature:trial_again",
+          "placement:trial_offer"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -22,10 +82,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0",
-        "android": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",
@@ -114,16 +170,13 @@
           "within_hours": 1
         }
       ],
-      "channels": [
-        "appstore",
-        "play_test"
+      "requires": [
+        "feature:trial_again"
       ]
     }
   ],
   "expect": {
-    "errors": [
-      "active_before_release"
-    ],
+    "errors": [],
     "warnings": []
   }
 }

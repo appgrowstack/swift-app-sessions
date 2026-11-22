@@ -1,5 +1,5 @@
 {
-  "description": "app_version の範囲の形が違う（~>3.3）。その件だけ飛ばし、ほかの件は使う",
+  "description": "app_version が空（どの OS でも requires を解決できなかった）。読めるが、どの OS にも出さない",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -21,9 +21,7 @@
           "ios",
           "android"
         ],
-        "app_version": {
-          "ios": "~>3.3"
-        },
+        "app_version": {},
         "starts_at": "2026-12-01T00:00:00+09:00",
         "ends_at": null,
         "triggers": [
@@ -119,93 +117,9 @@
             "within_hours": 672
           }
         ]
-      },
-      {
-        "schema_version": 1,
-        "id": "aaa-offer",
-        "type": "custom",
-        "status": "active",
-        "title": "機能のペイウォールを閉じた後と、交換の後に、2日間を勧める",
-        "purpose": "2日間を始める割合が holdout より上がるか",
-        "priority": 50,
-        "platforms": [
-          "ios",
-          "android"
-        ],
-        "app_version": {
-          "ios": ">=3.3.0",
-          "android": ">=3.3.0"
-        },
-        "starts_at": "2026-12-01T00:00:00+09:00",
-        "ends_at": null,
-        "triggers": [
-          {
-            "id": "after_paywall",
-            "event": "paywall_closed",
-            "where": {
-              "all": [
-                {
-                  "prop": "result",
-                  "not_in": [
-                    "purchased",
-                    "restored",
-                    "pending"
-                  ]
-                },
-                {
-                  "prop": "source",
-                  "in": [
-                    "habit_limit",
-                    "records_graph",
-                    "widget"
-                  ]
-                }
-              ]
-            },
-            "wait_seconds": 5
-          },
-          {
-            "id": "after_exchange",
-            "event": "exchange_completed",
-            "where": null,
-            "wait_seconds": 600
-          }
-        ],
-        "audience": {
-          "fact": "is_premium",
-          "eq": false
-        },
-        "limits": {
-          "max_shown": 4,
-          "min_hours_between": 24,
-          "after_dismiss_days": 7,
-          "after_action_days": null
-        },
-        "holdout": 0.2,
-        "show": {
-          "placement": "banner",
-          "values": {
-            "title": {
-              "ja": "aaa-offer の見出し",
-              "en": "aaa-offer title"
-            }
-          }
-        },
-        "on_tap": {
-          "action": "open_habit",
-          "args": {
-            "habit": "walk_6000"
-          }
-        },
-        "goals": [
-          {
-            "event": "purchase_completed",
-            "where": null,
-            "within_hours": 672
-          }
-        ]
       }
-    ]
+    ],
+    "releases": {}
   },
   "context": {
     "platform": "ios",
@@ -242,36 +156,12 @@
     }
   },
   "expect": {
-    "set_schema_valid": false,
-    "show": "aaa-offer",
-    "trigger": "after_paywall",
-    "values": {
-      "title": "aaa-offer の見出し"
-    },
+    "set_schema_valid": true,
+    "show": null,
+    "trigger": null,
     "outcomes": {
-      "trial-2days-after-feature": "rejected:invalid",
-      "aaa-offer": "show"
+      "trial-2days-after-feature": "inactive:app_version"
     },
-    "records": [
-      {
-        "name": "campaign_rejected",
-        "params": {
-          "campaign": "trial-2days-after-feature",
-          "set_version": 7,
-          "reason": "invalid"
-        }
-      },
-      {
-        "name": "campaign_eligible",
-        "params": {
-          "campaign": "aaa-offer",
-          "set_version": 7,
-          "trigger": "after_paywall",
-          "side": "treatment",
-          "propensity": 0.8,
-          "policy_version": 7
-        }
-      }
-    ]
+    "records": []
   }
 }

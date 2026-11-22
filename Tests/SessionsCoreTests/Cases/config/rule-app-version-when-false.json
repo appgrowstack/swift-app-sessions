@@ -1,0 +1,60 @@
+{
+  "description": "範囲に入っても、条件に合わなければ当たらない",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "plans_count": {
+        "type": "int",
+        "default": 2,
+        "rules": [
+          {
+            "when": {
+              "fact": "lang",
+              "eq": "ja"
+            },
+            "app_version": {
+              "ios": {
+                "min": "2.4.0",
+                "exclude": []
+              }
+            },
+            "value": 3
+          }
+        ]
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "en",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "plans_count",
+      "type": "int",
+      "fallback": 0
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "plans_count",
+        "value": 2,
+        "source": "default",
+        "variant": null
+      }
+    ],
+    "records": []
+  }
+}

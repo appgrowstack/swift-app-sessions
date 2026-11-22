@@ -1,17 +1,45 @@
 {
-  "description": "Google Play の版は鍵なしで読めないので、確かめずに警告だけ",
+  "description": "audience に app_version の条件を書いたら誤り（手で書くバージョンの範囲）",
   "manifest": "gamification-app",
   "campaign_policy": {
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {
-    "ios": {
-      "version": "3.3.0"
-    },
-    "android": {
-      "unknown": "Google Playの公開中の版を鍵なしで読める約束が無い"
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -22,10 +50,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0",
-        "android": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",
@@ -55,6 +79,10 @@
       ],
       "audience": {
         "all": [
+          {
+            "fact": "app_version",
+            "eq": "3.3.0"
+          },
           {
             "fact": "is_premium",
             "eq": false
@@ -117,9 +145,9 @@
     }
   ],
   "expect": {
-    "errors": [],
-    "warnings": [
-      "release_unknown"
-    ]
+    "errors": [
+      "app_version_condition"
+    ],
+    "warnings": []
   }
 }

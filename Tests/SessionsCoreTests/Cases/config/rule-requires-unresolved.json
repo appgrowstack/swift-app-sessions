@@ -1,0 +1,62 @@
+{
+  "description": "requires だけで、core の解決した app_version も when も無い規則（core はいつも app_version を付けて配る）。端末はそのフラグを飛ばす",
+  "set": {
+    "schema_version": 1,
+    "project": "reading-memory",
+    "version": 7,
+    "published_at": 1795000000000,
+    "flags": {
+      "plans_count": {
+        "type": "int",
+        "default": 2,
+        "rules": [
+          {
+            "requires": [
+              "feature:three_plans"
+            ],
+            "value": 3
+          }
+        ]
+      }
+    }
+  },
+  "facts": {
+    "platform": "ios",
+    "app_version": "2.4.0",
+    "build": "240",
+    "channel": "appstore",
+    "lang": "ja",
+    "region": "JP",
+    "days_since_first_seen": 3
+  },
+  "person_id": "inst-1",
+  "internal": false,
+  "now": "2026-12-10T12:00:00+09:00",
+  "reads": [
+    {
+      "key": "plans_count",
+      "type": "int",
+      "fallback": 2
+    }
+  ],
+  "expect": {
+    "values": [
+      {
+        "key": "plans_count",
+        "value": 2,
+        "source": "fallback",
+        "variant": null
+      }
+    ],
+    "records": [
+      {
+        "name": "config_rejected",
+        "params": {
+          "key": "plans_count",
+          "reason": "invalid",
+          "set_version": 7
+        }
+      }
+    ]
+  }
+}

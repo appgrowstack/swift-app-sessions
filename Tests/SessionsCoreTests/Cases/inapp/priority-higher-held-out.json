@@ -22,8 +22,14 @@
           "android"
         ],
         "app_version": {
-          "ios": ">=3.3.0",
-          "android": ">=3.3.0"
+          "ios": {
+            "min": "3.3.0",
+            "exclude": []
+          },
+          "android": {
+            "min": "3.3.0",
+            "exclude": []
+          }
         },
         "starts_at": "2026-12-01T00:00:00+09:00",
         "ends_at": null,
@@ -134,8 +140,14 @@
           "android"
         ],
         "app_version": {
-          "ios": ">=3.3.0",
-          "android": ">=3.3.0"
+          "ios": {
+            "min": "3.3.0",
+            "exclude": []
+          },
+          "android": {
+            "min": "3.3.0",
+            "exclude": []
+          }
         },
         "starts_at": "2026-12-01T00:00:00+09:00",
         "ends_at": null,
@@ -206,7 +218,8 @@
           }
         ]
       }
-    ]
+    ],
+    "releases": {}
   },
   "context": {
     "platform": "ios",

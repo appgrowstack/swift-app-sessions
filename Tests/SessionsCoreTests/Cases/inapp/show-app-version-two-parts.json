@@ -1,5 +1,5 @@
 {
-  "description": "アプリのバージョンが 3.10（足りない所は0として比べる）",
+  "description": "アプリのバージョンが 3.10（足りない所は0として比べる。exclude の 4.0.0 とは違う）",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -22,7 +22,12 @@
           "android"
         ],
         "app_version": {
-          "ios": ">=3.3.0 <4.0.0"
+          "ios": {
+            "min": "3.3.0",
+            "exclude": [
+              "4.0.0"
+            ]
+          }
         },
         "starts_at": "2026-12-01T00:00:00+09:00",
         "ends_at": null,
@@ -120,7 +125,8 @@
           }
         ]
       }
-    ]
+    ],
+    "releases": {}
   },
   "context": {
     "platform": "ios",

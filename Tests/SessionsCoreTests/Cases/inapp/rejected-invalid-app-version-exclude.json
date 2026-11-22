@@ -1,5 +1,5 @@
 {
-  "description": "範囲の上の端（<4.0.0）に当たる 4.0.0",
+  "description": "exclude にバージョンの形でない物がある",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -22,7 +22,16 @@
           "android"
         ],
         "app_version": {
-          "ios": ">=3.3.0 <4.0.0"
+          "ios": {
+            "min": "3.3.0",
+            "exclude": [
+              "3.x"
+            ]
+          },
+          "android": {
+            "min": "3.3.0",
+            "exclude": []
+          }
         },
         "starts_at": "2026-12-01T00:00:00+09:00",
         "ends_at": null,
@@ -120,11 +129,12 @@
           }
         ]
       }
-    ]
+    ],
+    "releases": {}
   },
   "context": {
     "platform": "ios",
-    "app_version": "4.0.0",
+    "app_version": "3.3.0",
     "build": "330",
     "channel": "appstore",
     "lang": "ja",
@@ -157,12 +167,21 @@
     }
   },
   "expect": {
-    "set_schema_valid": true,
+    "set_schema_valid": false,
     "show": null,
     "trigger": null,
     "outcomes": {
-      "trial-2days-after-feature": "inactive:app_version"
+      "trial-2days-after-feature": "rejected:invalid"
     },
-    "records": []
+    "records": [
+      {
+        "name": "campaign_rejected",
+        "params": {
+          "campaign": "trial-2days-after-feature",
+          "set_version": 7,
+          "reason": "invalid"
+        }
+      }
+    ]
   }
 }

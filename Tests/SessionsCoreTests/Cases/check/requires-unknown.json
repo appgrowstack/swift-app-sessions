@@ -1,11 +1,46 @@
 {
-  "description": "版を読んでいない OS も警告だけ",
+  "description": "requires の機能のキーを持つマニフェストがどこにも無いなら誤り",
   "manifest": "gamification-app",
   "campaign_policy": {
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {},
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ]
+  },
   "campaigns": [
     {
       "schema_version": 1,
@@ -15,10 +50,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0",
-        "android": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",
@@ -106,14 +137,16 @@
           "where": null,
           "within_hours": 1
         }
+      ],
+      "requires": [
+        "feature:trial_again"
       ]
     }
   ],
   "expect": {
-    "errors": [],
-    "warnings": [
-      "release_unknown",
-      "release_unknown"
-    ]
+    "errors": [
+      "requires_unknown"
+    ],
+    "warnings": []
   }
 }

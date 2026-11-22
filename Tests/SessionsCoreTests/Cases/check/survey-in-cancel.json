@@ -5,13 +5,35 @@
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {
-    "ios": {
-      "version": "3.3.0"
-    },
-    "android": {
-      "version": "3.3.0"
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:submit_answer",
+          "event:subscription_cancel_started",
+          "event:survey_answered",
+          "fact:is_premium",
+          "fact:paywall_closed_count",
+          "placement:survey"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:submit_answer",
+          "event:subscription_cancel_started",
+          "event:survey_answered",
+          "fact:is_premium",
+          "fact:paywall_closed_count",
+          "placement:survey"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -22,10 +44,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=2.4.0",
-        "android": ">=2.4.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "survey-why-not-premium",

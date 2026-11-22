@@ -18,8 +18,14 @@
           "android"
         ],
         "app_version": {
-          "ios": ">=3.3.0",
-          "android": ">=3.3.0"
+          "ios": {
+            "min": "3.3.0",
+            "exclude": []
+          },
+          "android": {
+            "min": "3.3.0",
+            "exclude": []
+          }
         },
         "starts_at": null,
         "ends_at": null,
@@ -90,7 +96,8 @@
           }
         ]
       }
-    ]
+    ],
+    "releases": {}
   },
   "context": {
     "platform": "ios",

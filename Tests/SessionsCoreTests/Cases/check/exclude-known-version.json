@@ -1,17 +1,60 @@
 {
-  "description": "公開中の版が since より新しければ通る（版は数で比べる。3.10.0 は 3.3.0 より新しい）",
+  "description": "core の知っているバージョンを exclude_app_versions で外すのは通る",
   "manifest": "gamification-app",
   "campaign_policy": {
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {
-    "ios": {
-      "version": "3.10.0"
-    },
-    "android": {
-      "version": "3.3.0"
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      },
+      {
+        "version": "3.3.1",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -22,10 +65,6 @@
         "ios",
         "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0",
-        "android": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",
@@ -113,7 +152,12 @@
           "where": null,
           "within_hours": 1
         }
-      ]
+      ],
+      "exclude_app_versions": {
+        "ios": [
+          "3.3.0"
+        ]
+      }
     }
   ],
   "expect": {

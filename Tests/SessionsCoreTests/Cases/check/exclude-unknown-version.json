@@ -1,17 +1,45 @@
 {
-  "description": "platforms に無い OS は見ない",
+  "description": "exclude_app_versions に core の知らないバージョンを書いたら誤り",
   "manifest": "gamification-app",
   "campaign_policy": {
     "max_shown_cap": 4,
     "holdout_min": 0.2
   },
-  "stores": {
-    "ios": {
-      "version": "3.3.0"
-    },
-    "android": {
-      "version": null
-    }
+  "releases": {
+    "ios": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ],
+    "android": [
+      {
+        "version": "3.3.0",
+        "store_state": "released",
+        "capabilities": [
+          "action:start_trial",
+          "event:exchange_completed",
+          "event:paywall_closed",
+          "event:purchase_completed",
+          "event:reverse_trial_started",
+          "fact:days_since_trial_ended",
+          "fact:is_premium",
+          "fact:trial_eligible",
+          "placement:trial_offer"
+        ]
+      }
+    ]
   },
   "campaigns": [
     {
@@ -19,11 +47,9 @@
       "status": "active",
       "priority": 50,
       "platforms": [
-        "ios"
+        "ios",
+        "android"
       ],
-      "app_version": {
-        "ios": ">=3.3.0"
-      },
       "starts_at": null,
       "ends_at": null,
       "id": "trial-2nd-after-14-days",
@@ -111,11 +137,18 @@
           "where": null,
           "within_hours": 1
         }
-      ]
+      ],
+      "exclude_app_versions": {
+        "android": [
+          "3.2.9"
+        ]
+      }
     }
   ],
   "expect": {
-    "errors": [],
+    "errors": [
+      "unknown_app_version"
+    ],
     "warnings": []
   }
 }
