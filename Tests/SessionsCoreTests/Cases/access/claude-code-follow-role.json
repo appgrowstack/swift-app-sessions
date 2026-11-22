@@ -1,0 +1,33 @@
+{
+  "description": "scope を選ばずに出したトークン（scopes が null）は主体の今の役割に従う。claude-code-scope-missing と同じ呼び手・同じ操作（links.read）でも、一覧で絞っていなければ通る。トークンを出した後に access.ts に足した操作も出し直さずに使える",
+  "org_humans": 1,
+  "caller": {
+    "credential": "agent_token",
+    "principal_id": "agt_claudecode000001",
+    "agent_location": "local",
+    "step_up": false,
+    "memberships": [
+      {
+        "role": "editor",
+        "project": null
+      },
+      {
+        "role": "support",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "links.read",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": false
+  }
+}

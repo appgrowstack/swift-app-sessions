@@ -17,26 +17,7 @@
       }
     ],
     "token": {
-      "scopes": [
-        "registry.read",
-        "campaigns.read",
-        "campaigns.stop",
-        "campaigns.push",
-        "support.ticket.list",
-        "support.ticket.read",
-        "support.reply",
-        "support.redraft",
-        "people.person.read",
-        "links.create",
-        "keys.create",
-        "access.token.issue",
-        "access.token.revoke",
-        "access.approval.read",
-        "access.approval.decide",
-        "audit.read",
-        "people.forget",
-        "notify.variant.approve"
-      ],
+      "scopes": null,
       "projects": null
     }
   },

@@ -1,0 +1,28 @@
+{
+  "description": "本人の ut_ で scopes が null なら、owner の役割の全部に従う（keys.create は本人の確認つきなので self_approved で実行）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "projects": null
+    }
+  },
+  "operation": {
+    "permission": "keys.create",
+    "project": "gamification-app"
+  },
+  "expect": {
+    "result": "allow",
+    "status": 200,
+    "self_approved": true
+  }
+}
