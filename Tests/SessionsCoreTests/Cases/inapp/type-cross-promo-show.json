@@ -167,7 +167,9 @@
           "campaign": "cross-promo-reading-memory",
           "set_version": 7,
           "trigger": "reading_streak",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 0.8,
+          "policy_version": 7
         }
       }
     ]

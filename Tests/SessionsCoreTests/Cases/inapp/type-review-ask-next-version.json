@@ -133,7 +133,9 @@
           "campaign": "review-after-third-exchange",
           "set_version": 7,
           "trigger": "third_exchange",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 1,
+          "policy_version": 7
         }
       }
     ]

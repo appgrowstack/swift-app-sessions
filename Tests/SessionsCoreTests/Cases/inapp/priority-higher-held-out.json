@@ -263,7 +263,9 @@
           "campaign": "aaa-offer",
           "set_version": 7,
           "trigger": "after_paywall",
-          "side": "holdout"
+          "side": "holdout",
+          "propensity": 0.2,
+          "policy_version": 7
         }
       },
       {
@@ -272,7 +274,9 @@
           "campaign": "trial-2days-after-feature",
           "set_version": 7,
           "trigger": "after_paywall",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 0.8,
+          "policy_version": 7
         }
       }
     ]

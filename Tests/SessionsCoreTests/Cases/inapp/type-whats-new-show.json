@@ -130,7 +130,9 @@
           "campaign": "whats-new-3-3-0-auto-check",
           "set_version": 7,
           "trigger": "updated",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 0.9,
+          "policy_version": 7
         }
       }
     ]

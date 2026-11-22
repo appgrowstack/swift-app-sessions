@@ -174,7 +174,9 @@
           "campaign": "trial-2days-after-feature",
           "set_version": 7,
           "trigger": "after_exchange",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 0.8,
+          "policy_version": 7
         }
       }
     ]

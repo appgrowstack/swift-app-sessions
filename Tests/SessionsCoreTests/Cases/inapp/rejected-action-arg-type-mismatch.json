@@ -241,7 +241,9 @@
           "campaign": "aaa-offer",
           "set_version": 7,
           "trigger": "after_paywall",
-          "side": "treatment"
+          "side": "treatment",
+          "propensity": 0.8,
+          "policy_version": 7
         }
       }
     ]

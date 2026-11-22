@@ -68,7 +68,9 @@
           "key": "paywall_hard",
           "experiment": "paywall-hard-vs-soft",
           "variant": "soft",
-          "set_version": 7
+          "set_version": 7,
+          "propensity": 0.5,
+          "policy_version": 7
         }
       }
     ]
