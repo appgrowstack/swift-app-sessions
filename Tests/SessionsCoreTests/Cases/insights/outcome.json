@@ -1,0 +1,13 @@
+{
+  "description": "仮説の記録の結論の outcome（docs/design/insights.md 8.7節）。probability_better は仮説の側が良い確率。無作為に分けた実験（method が experiment）で、95%を超えた時だけ supported か rejected にする。境の値ちょうどは inconclusive。前後の比べ（before_after）は inconclusive から始め、本人だけが変えられる",
+  "vectors": [
+    { "description": "仮説の側が良い確率が95%を超える", "input": { "method": "experiment", "probability_better": 0.97 }, "expect": { "outcome": "supported" } },
+    { "description": "比べる側が良い確率が95%を超える", "input": { "method": "experiment", "probability_better": 0.02 }, "expect": { "outcome": "rejected" } },
+    { "description": "どちらも95%に届かない", "input": { "method": "experiment", "probability_better": 0.6 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど95%は超えていない", "input": { "method": "experiment", "probability_better": 0.95 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど5%は比べる側が良い確率が95%で、超えていない", "input": { "method": "experiment", "probability_better": 0.05 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "前後の比べは、確率が高くても決めない", "input": { "method": "before_after", "probability_better": 0.99 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "確率が分からない", "input": { "method": "experiment", "probability_better": null }, "expect": { "outcome": "inconclusive" } },
+    { "description": "数が無い結論", "input": null, "expect": { "outcome": "inconclusive" } }
+  ]
+}
