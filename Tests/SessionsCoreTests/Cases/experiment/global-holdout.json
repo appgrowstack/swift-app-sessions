@@ -1,0 +1,11 @@
+{
+  "description": "R10 の製品全体の holdout。unit < 0.05 なら held_out。本人とテスターの端末は出す側。unit は小数6桁で丸めて比べる",
+  "vectors": [
+    { "input": { "project": "gamification-app", "person_id": "user-27", "internal": false }, "key": "gamification-app:user-27:global_holdout", "hash32": 58954109, "expect": { "unit": 0.013726, "held_out": true } },
+    { "input": { "project": "gamification-app", "person_id": "user-27", "internal": true }, "key": "gamification-app:user-27:global_holdout", "hash32": 58954109, "expect": { "unit": 0.013726, "held_out": false } },
+    { "input": { "project": "gamification-app", "person_id": "user-63", "internal": false }, "key": "gamification-app:user-63:global_holdout", "hash32": 21480101, "expect": { "unit": 0.005001, "held_out": true } },
+    { "input": { "project": "gamification-app", "person_id": "user-1", "internal": false }, "key": "gamification-app:user-1:global_holdout", "hash32": 4252433684, "expect": { "unit": 0.990097, "held_out": false } },
+    { "input": { "project": "reading-memory", "person_id": "user-39", "internal": false }, "key": "reading-memory:user-39:global_holdout", "hash32": 192350895, "expect": { "unit": 0.044785, "held_out": true } },
+    { "input": { "project": "reading-memory", "person_id": "user-2", "internal": false }, "key": "reading-memory:user-2:global_holdout", "hash32": 590024881, "expect": { "unit": 0.137376, "held_out": false } }
+  ]
+}
