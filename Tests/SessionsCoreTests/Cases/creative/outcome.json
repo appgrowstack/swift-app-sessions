@@ -1,0 +1,13 @@
+{
+  "description": "R12 仮説の結論の outcome（docs/design/creatives.md 14.3節）。prob_better は仮説の案が元より良い事後確率。95%を超えた時だけ supported か rejected にする。境の値ちょうどは inconclusive",
+  "vectors": [
+    { "description": "仮説の案が良い確率が95%を超える", "input": { "randomized": true, "prob_better": 0.97 }, "expect": { "outcome": "supported" } },
+    { "description": "元が良い確率が95%を超える", "input": { "randomized": true, "prob_better": 0.02 }, "expect": { "outcome": "rejected" } },
+    { "description": "どちらも95%に届かない", "input": { "randomized": true, "prob_better": 0.6 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど95%は超えていない", "input": { "randomized": true, "prob_better": 0.95 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど5%は元が良い確率が95%で、超えていない", "input": { "randomized": true, "prob_better": 0.05 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "無作為に分けていない数は、確率が高くても決めない", "input": { "randomized": false, "prob_better": 0.99 }, "expect": { "outcome": "inconclusive" } },
+    { "description": "確率が分からない", "input": { "randomized": true, "prob_better": null }, "expect": { "outcome": "inconclusive" } },
+    { "description": "数が無い結論", "input": null, "expect": { "outcome": "inconclusive" } }
+  ]
+}
