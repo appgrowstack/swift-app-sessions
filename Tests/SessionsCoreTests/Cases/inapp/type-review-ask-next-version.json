@@ -1,5 +1,5 @@
 {
-  "description": "review_ask: 前に頼んだのは 3.3.0 で、今は 3.4.0。60日を過ぎたので出す",
+  "description": "review_ask: 前に頼んだのは 3.3.0 で、今は 3.4.0。120日を過ぎたので出す",
   "manifest": "gamification-app",
   "set": {
     "schema_version": 1,
@@ -49,9 +49,26 @@
         "limits": {
           "max_shown": 3,
           "max_per_app_version": 1,
-          "min_hours_between": 1440,
+          "min_hours_between": 2880,
           "after_dismiss_days": 60,
-          "after_action_days": 60
+          "after_action_days": 60,
+          "not_after_in_launch": [
+            {
+              "event": "paywall_closed",
+              "where": null
+            },
+            {
+              "event": "tapped",
+              "where": {
+                "prop": "target",
+                "eq": "feedback"
+              }
+            },
+            {
+              "event": "sync_failed",
+              "where": null
+            }
+          ]
         },
         "holdout": 0,
         "show": {
@@ -92,12 +109,12 @@
   "history": {
     "session_shown": 0,
     "shown_at": [
-      "2026-09-01T12:00:00+09:00"
+      "2026-08-01T12:00:00+09:00"
     ],
     "campaigns": {
       "review-after-third-exchange": {
         "shown_count": 1,
-        "last_shown_at": "2026-09-01T12:00:00+09:00",
+        "last_shown_at": "2026-08-01T12:00:00+09:00",
         "shown_by_app_version": {
           "3.3.0": 1
         }

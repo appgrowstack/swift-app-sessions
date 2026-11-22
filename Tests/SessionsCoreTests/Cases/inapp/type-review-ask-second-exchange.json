@@ -49,9 +49,26 @@
         "limits": {
           "max_shown": 3,
           "max_per_app_version": 1,
-          "min_hours_between": 1440,
+          "min_hours_between": 2880,
           "after_dismiss_days": 60,
-          "after_action_days": 60
+          "after_action_days": 60,
+          "not_after_in_launch": [
+            {
+              "event": "paywall_closed",
+              "where": null
+            },
+            {
+              "event": "tapped",
+              "where": {
+                "prop": "target",
+                "eq": "feedback"
+              }
+            },
+            {
+              "event": "sync_failed",
+              "where": null
+            }
+          ]
         },
         "holdout": 0,
         "show": {
