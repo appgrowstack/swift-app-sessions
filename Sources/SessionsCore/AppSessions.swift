@@ -62,6 +62,29 @@ public final class AppSessions {
 
     /// The recording's decision from the sink for this session. Without one, `buffer`.
     public private(set) var replayMode: SessionReplayMode = .buffer
+    /// A priority condition (sessions.md 5: rage, three dead taps, a hang, a ticket, a paywall
+    /// closed without buying, …) was met in this session: its buffered recording is sent.
+    public private(set) var priorityHit = false
+    /// The previous session ended `crashed`, `hung` or `killed`: what is left of its recording is sent.
+    public private(set) var previousSessionEndedBadly = false
+    /// The previous session's id (set at the start of each session).
+    public private(set) var previousSessionID: String?
+    /// The recording is taking frames (``SessionReplayRecorder`` sets it). Dead taps need frames.
+    public internal(set) var isCapturing = false
+    /// A live viewer is connected: batches go every 5 seconds instead of ``Configuration/flushIntervalMs``.
+    public var liveConnected = false
+
+    /// The sink handed over the upload token of a session's recording (once, with its first batch).
+    public var onUploadToken: (@MainActor (_ sessionID: String, _ token: String) -> Void)?
+    /// The sink says someone is waiting to watch this device live.
+    public var onLiveOffer: (@MainActor (SessionLiveOffer) -> Void)?
+    /// Every event recorded, as it is recorded (the live view sends them at once).
+    public var onEvent: (@MainActor (SessionEvent) -> Void)?
+    /// A session started (its id). The recording closes the segment of the one before.
+    public var onSessionStart: (@MainActor (String) -> Void)?
+    /// A priority condition was met in a session (its id), while it runs or as it ends.
+    public var onPriority: (@MainActor (String) -> Void)?
+    private var priorityLog: [SessionEvent] = []
 
     public init(sink: any SessionSink,
                 deviceInfo: @escaping @MainActor () -> SessionDeviceInfo,
@@ -91,8 +114,6 @@ public final class AppSessions {
     /// The session that ended last, for matching a late crash report to it.
     public var previousSessionStartedAt: Int? { state.lastClosed?.device.startedAt }
     public var currentScreen: String? { navigator.current }
-    /// The light record never captures frames (the recording does), so it never reports dead taps.
-    public var isCapturing: Bool { false }
     /// Batches waiting for the sink.
     public var waitingBatches: Int { state.outbox.count + (state.open?.pending.isEmpty == false ? 1 : 0) }
 
@@ -162,7 +183,8 @@ public final class AppSessions {
         guard state.open != nil, backgroundAt == nil else { return }
         if let found = rage.expire(now: t(clock.nowMs())) { recordRage(found) }
         if dirty { save() }
-        if clock.nowMs() - lastFlushAt >= configuration.flushIntervalMs, state.open?.pending.isEmpty == false {
+        let interval = liveConnected ? min(5000, configuration.flushIntervalMs) : configuration.flushIntervalMs
+        if clock.nowMs() - lastFlushAt >= interval, state.open?.pending.isEmpty == false {
             scheduleFlush()
         }
     }
@@ -231,7 +253,8 @@ public final class AppSessions {
         if let frame { updateWindow(frame) }
         let now = t(clock.nowMs())
         let position = SessionRules.normalizeTap(x: x, y: y, window: window)
-        record(.tap(t: now, x: position.x, y: position.y, screen: screenName, target: target))
+        // A name outside the schema's form would make the server refuse the whole batch.
+        record(.tap(t: now, x: position.x, y: position.y, screen: screenName, target: target.flatMap { Self.isScreenName($0) ? $0 : nil }))
         if let found = rage.add(.init(t: now, x: x - window.x, y: y - window.y)) { recordRage(found) }
     }
 
@@ -338,9 +361,11 @@ public final class AppSessions {
             state.outbox.removeAll { $0.session.sessionID == batch.session.sessionID && $0.seq == batch.seq }
             let current = batch.session.sessionID == currentSessionID
             switch reply {
-            case .accepted(let replay, let keepProps):
+            case .accepted(let replay, let keepProps, let uploadToken, let live):
                 if current, let replay { replayMode = replay }
                 if let keepProps { configuration.keepProps = keepProps }
+                if let uploadToken { onUploadToken?(batch.session.sessionID, uploadToken) }
+                if current, let live { onLiveOffer?(live) }
             case .disabled:
                 state.outbox.removeAll { $0.session.sessionID == batch.session.sessionID }
                 if current {
@@ -388,12 +413,17 @@ public final class AppSessions {
                                        pending: [.start(t: 0, previousEnd: previousEnd, previousSessionID: previousID, first: first)])
         disabled = false
         replayMode = .buffer
+        priorityHit = false
+        priorityLog = state.open?.pending.first.map { [$0] } ?? []
+        previousSessionEndedBadly = [.crashed, .hung, .killed].contains(previousEnd)
+        previousSessionID = previousID
         navigator = Navigator()
         stack = []
         scrolls = [:]
         backHint = nil
         rage = RageDetector(window: window.size)
         save()
+        onSessionStart?(device.sessionID)
     }
 
     /// Ends `open`: the scroll depths it still had, `end`, and its batches into the outbox.
@@ -405,6 +435,12 @@ public final class AppSessions {
             record.pending.append(.end(t: endT, reason: reason))
         }
         state.open = record
+        if !priorityHit, priorityLog.first.map({ if case .start = $0 { true } else { false } }) == true {
+            if !SessionRules.priorityHits(priorityLog + [.end(t: endT, reason: reason)]).isEmpty {
+                priorityHit = true
+                onPriority?(open.device.sessionID)
+            }
+        }
         batchPending()
         let next = state.open?.nextSeq ?? record.nextSeq
         state.lastClosed = ClosedSessionRecord(device: open.device, nextSeq: next, endT: endT, reason: reason,
@@ -454,6 +490,23 @@ public final class AppSessions {
         open.scrolls = pendingScrolls()
         state.open = open
         dirty = true
+        notePriority(event, sessionID: open.device.sessionID)
+        onEvent?(event)
+    }
+
+    /// Keeps the events the priority conditions read, and whether one is met.
+    private func notePriority(_ event: SessionEvent, sessionID: String) {
+        guard !priorityHit else { return }
+        switch event {
+        case .start, .rage, .dead, .hang, .mark, .end:
+            priorityLog.append(event)
+        case .event(_, let name, _, _) where name == "paywall_closed":
+            priorityLog.append(event)
+        default:
+            return
+        }
+        priorityHit = !SessionRules.priorityHits(priorityLog).isEmpty
+        if priorityHit { onPriority?(sessionID) }
     }
 
     private func batchPending() {

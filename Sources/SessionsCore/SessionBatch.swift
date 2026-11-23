@@ -127,7 +127,10 @@ public struct SessionBatch: Sendable, Equatable, Codable {
 public enum SessionSinkReply: Sendable, Equatable {
     /// Taken. `replay` is the receiver's decision for the recording (nil: no decision, stay on
     /// `buffer`). `keepProps` replaces the kept properties when the receiver has newer ones.
-    case accepted(replay: SessionReplayMode? = nil, keepProps: [String: [String]]? = nil)
+    /// `uploadToken` lets the recording's segments of this session be sent (it comes once, with the
+    /// session's first batch). `live` says someone is waiting to watch this device.
+    case accepted(replay: SessionReplayMode? = nil, keepProps: [String: [String]]? = nil,
+                  uploadToken: String? = nil, live: SessionLiveOffer? = nil)
     /// The receiver does not take sessions (sessions turned off or paused). The recorder drops what
     /// it holds for this session and records nothing more until the next session.
     case disabled
@@ -140,3 +143,21 @@ public protocol SessionSink: Sendable {
     func send(_ batch: SessionBatch) async throws -> SessionSinkReply
 }
 
+
+/// Someone is waiting to watch this device live (`SessionLiveOffer`): open `url` with `token`.
+public struct SessionLiveOffer: Sendable, Equatable, Codable {
+    /// `<until>.<hex>`; `until` is when the wait ends (Unix seconds).
+    public var token: String
+    /// `wss://…/v1/sessions/live`.
+    public var url: URL
+
+    public init(token: String, url: URL) {
+        self.token = token
+        self.url = url
+    }
+
+    /// When the wait ends (milliseconds since 1970), read from the token.
+    public var untilMs: Int? {
+        token.split(separator: ".").first.flatMap { Int($0) }.map { $0 * 1000 }
+    }
+}

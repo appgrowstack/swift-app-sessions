@@ -22,6 +22,8 @@ public final class SessionCapture {
     private var hangMonitor: HangMonitor?
     private let metrics = MetricKitCrashes()
     private var tickCount = 0
+    /// The recording, once ``startReplay(_:live:configuration:)`` started it.
+    public private(set) var replay: SessionReplayCapture?
 
     /// `store` must be the store the recorder uses (the hang monitor marks a hang in it).
     public init(sessions: AppSessions, store: any SessionStateStore = FileSessionStateStore.standard()) {
@@ -35,10 +37,16 @@ public final class SessionCapture {
         sessions.start()
         let center = NotificationCenter.default
         observers.append(center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.sessions.enterBackground() }
+            MainActor.assumeIsolated {
+                self?.sessions.enterBackground()
+                self?.replay?.enterBackground()
+            }
         })
         observers.append(center.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.sessions.enterForeground() }
+            MainActor.assumeIsolated {
+                self?.sessions.enterForeground()
+                self?.replay?.enterForeground()
+            }
         })
         observers.append(center.addObserver(forName: UIResponder.keyboardDidShowNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.sessions.keyboard(shown: true) }
@@ -76,15 +84,37 @@ public final class SessionCapture {
         hangMonitor?.stop()
         hangMonitor = nil
         MXMetricManager.shared.remove(metrics)
+        replay?.stop()
+        replay = nil
+    }
+
+    /// Starts the recording (sessions.md 3.2): frames go to `recorder`, and to `live` while someone
+    /// watches. Make the recorder (and the live stream) before ``start(watchHangs:)``, so they see
+    /// the session start; call this right after it.
+    ///
+    /// ```swift
+    /// let recorder = SessionReplayRecorder(sessions: sessions, sink: replaySink)
+    /// let live = SessionLiveStream(sessions: sessions, connector: liveConnector)
+    /// capture.start()
+    /// capture.startReplay(recorder, live: live)
+    /// ```
+    public func startReplay(_ recorder: SessionReplayRecorder, live: SessionLiveStream? = nil,
+                            configuration: SessionReplayCapture.Configuration = .init()) {
+        guard replay == nil else { return }
+        let replay = SessionReplayCapture(capture: self, recorder: recorder, live: live, configuration: configuration)
+        self.replay = replay
+        replay.start()
     }
 
     private func attach(to window: UIWindow) {
         guard !Self.isSystemWindow(window),
               !(window.gestureRecognizers ?? []).contains(where: { $0 is SessionTapRecognizer }) else { return }
-        let recognizer = SessionTapRecognizer { [weak self, weak window] point in
+        let recognizer = SessionTapRecognizer(report: { [weak self, weak window] point in
             guard let self, let window else { return }
             self.tapped(at: point, in: window)
-        }
+        }, touch: { [weak self] down in
+            self?.replay?.touch(down: down)
+        })
         window.addGestureRecognizer(recognizer)
     }
 
@@ -94,7 +124,45 @@ public final class SessionCapture {
         let onScreen = window.convert(point, to: space)
         sessions.tap(x: onScreen.x, y: onScreen.y,
                      window: SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height),
-                     target: SessionMarkerView.target(at: point, in: window))
+                     target: SessionMarkerView.target(at: point, in: window) ?? Self.accessibleName(at: point, in: window))
+        replay?.tapped()
+    }
+
+    /// The accessibility identifier of the control under `point`, for a tap on something not marked
+    /// `.sessionTarget`. Only the identifier the developer set, never the label: a label can carry
+    /// what the person wrote (a button showing a habit's name). Made into a target name (lowercase
+    /// letters, digits and `_`).
+    static func accessibleName(at point: CGPoint, in window: UIWindow) -> String? {
+        var view = window.hitTest(point, with: nil)
+        var depth = 0
+        while let current = view, depth < 8 {
+            if !(current is UITextField), !(current is UITextView),
+               let identifier = current.accessibilityIdentifier, let name = targetName(identifier) {
+                return name
+            }
+            view = current.superview
+            depth += 1
+        }
+        return nil
+    }
+
+    /// `Save Habit` → `save_habit`. Nil when nothing of it is a letter or a digit of ASCII.
+    static func targetName(_ text: String) -> String? {
+        var out = ""
+        var gap = false
+        for scalar in text.lowercased().unicodeScalars {
+            if ("a"..."z").contains(scalar) || ("0"..."9").contains(scalar) {
+                if gap, !out.isEmpty { out.append("_") }
+                out.unicodeScalars.append(scalar)
+                gap = false
+            } else {
+                gap = true
+            }
+            if out.count >= 48 { break }
+        }
+        // The schema's `^[a-z][a-z0-9_]{0,47}$`: a name must start with a letter.
+        guard let first = out.unicodeScalars.first, ("a"..."z").contains(first) else { return nil }
+        return String(out.prefix(48))
     }
 
     private func everyHalfSecond() {
@@ -202,10 +270,12 @@ struct SessionScreenController: SessionScreenNode {
 /// to the app as if it were not there.
 final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
     private let report: @MainActor (CGPoint) -> Void
+    private let touch: @MainActor (Bool) -> Void
     private var startedAt: CGPoint?
 
-    init(report: @escaping @MainActor (CGPoint) -> Void) {
+    init(report: @escaping @MainActor (CGPoint) -> Void, touch: @escaping @MainActor (Bool) -> Void) {
         self.report = report
+        self.touch = touch
         super.init(target: nil, action: nil)
         cancelsTouchesInView = false
         delaysTouchesBegan = false
@@ -214,7 +284,10 @@ final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelega
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
-        if startedAt == nil, let touch = touches.first { startedAt = touch.location(in: view) }
+        if startedAt == nil, let first = touches.first {
+            startedAt = first.location(in: view)
+            touch(true)
+        }
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
@@ -223,16 +296,19 @@ final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelega
             // A drag is a scroll, not a tap.
             if hypot(end.x - start.x, end.y - start.y) < 10 { report(end) }
         }
+        if startedAt != nil { touch(false) }
         startedAt = nil
         state = .failed
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        if startedAt != nil { touch(false) }
         startedAt = nil
         state = .failed
     }
 
     override func reset() {
+        if startedAt != nil { touch(false) }
         startedAt = nil
     }
 

@@ -17,7 +17,7 @@ iOSアプリの中で人が何をしたかを、セッションごとに記録�
 - **マーク。** 一部の出来事（`paywall_shown`・`purchase_completed`・`campaign_shown`など）はマークも作る。`mark(_:ref:side:)`で出来事なしにマークを足せる
 - **依存なし。** Foundation・Observation・UIKit・MetricKitだけ。SwiftUIを使うのは`SessionsSwiftUI`だけ
 
-軽い記録は画素を持たない。`.sessionMask()`と`.sessionNoCapture()`はマークを置くだけ。`.sessionNoCapture()`を付けた画面は、見えている間と、その上に別の画面が重なっている間（pushした先・その画面から出したシート）、録画を撮らない。アラートとアクションシートも出ている間は撮らない。今撮ると撮らない理由は`SessionCapture.blankReason(noCaptureScreens:)`で分かる。
+軽い記録は画素を持たない。録画（下）は持つ。`.sessionMask()`と`.sessionNoCapture()`は録画が読むマークを置く。`.sessionNoCapture()`を付けた画面は、見えている間と、その上に別の画面が重なっている間（pushした先・その画面から出したシート）、録画を撮らない。アラートとアクションシートも出ている間は撮らない。今撮ると撮らない理由は`SessionCapture.blankReason(noCaptureScreens:)`で分かる。
 
 ### 記録の送り先
 
@@ -66,6 +66,21 @@ struct MyApp: App {
 
 このパッケージは単体で使えます。サーバーにつなぐときは、このパッケージで送り先を書く代わりに、コネクターのパッケージ [swift-appgrowstack](https://github.com/appgrowstack/swift-appgrowstack) の対応するtrait（SwiftPMのtraits）を有効にします。
 
+### 画面の録画
+
+`SessionReplayRecorder`と`SessionCapture.startReplay(_:live:configuration:)`は、画面をコマで録る。1秒に1枚まで（新しい画面・タップ・止まったスクロールの後は早めに）、1ptを1pxで描き、JPEGにする。前のコマと同じに見えるコマは画像を持たない。入力欄・`.sessionMask()`・Webの画面は、コマがメインスレッドを出る前にいつも黒で塗る。`mask: .textAndImages`（既定）では、ラベル・画像・SwiftUIの文字と画像の層も全部塗る。隠す所の位置が取れないコマは捨てる。指が触れている間・一覧が動いている間・Low Power Mode・端末が熱い時・電池が20%未満の時は撮らない。
+
+コマは塊（`.agsr`）にして端末に溜め（50MB・7日）、セッションのバッチの答えが許す時に`SessionReplaySink`で送る。`record`は全部を送る。`buffer`は直近60秒だけを残し、そのセッションで何かがうまくいかなかった時（rage tap・固まった・買わずに閉じたペイウォールなど）だけ送る。塊はWi-Fiなど従量でない回線で送る。優先のセッションは従量の回線でも1日3MBまで送る。`SessionLiveStream`は、見ている人がいる間、同じコマと出来事をすぐ送る。
+
+```swift
+let sessions = AppSessions(sink: sessionSink, channel: "appstore")
+let recorder = SessionReplayRecorder(sessions: sessions, sink: replaySink)
+let live = SessionLiveStream(sessions: sessions, connector: liveConnector)  // optional
+let capture = SessionCapture(sessions: sessions)
+capture.start()
+capture.startReplay(recorder, live: live, configuration: .init(mask: .textAndImages, noCaptureScreens: ["photo_picker"]))
+```
+
 ## 入れ方
 
 `Package.swift`に足す。
@@ -90,8 +105,8 @@ targets: [
 
 | プロダクト | 中身 |
 |---|---|
-| `SessionsCore` | セッションの区切り・判定・記録する`AppSessions`・バッチ・`SessionSink`・`FileSessionSink`・`DebugSessionSink`。FoundationとObservationだけ |
-| `SessionsCapture` | UIKit。タップ・アプリのライフサイクル・キーボード・スクロールビュー・止まり・MetricKitのクラッシュ・端末の値。UIKitの無い所では空になる |
+| `SessionsCore` | セッションの区切り・判定・記録する`AppSessions`・バッチ・`SessionSink`・`FileSessionSink`・`DebugSessionSink`・録画の`SessionReplayRecorder`と塊・`SessionLiveStream`。FoundationとObservationだけ |
+| `SessionsCapture` | UIKit。タップ・アプリのライフサイクル・キーボード・スクロールビュー・止まり・MetricKitのクラッシュ・端末の値・録画のコマ（`startReplay`）。UIKitの無い所では空になる |
 | `SessionsSwiftUI` | `.sessionTarget`・`.sessionScroll`・`.sessionRow`・`.sessionMask`・`.sessionNoCapture` |
 | `SessionsTesting` | テスト用のフェイク。時計・保存先・id・受けた物を残す送り先 |
 

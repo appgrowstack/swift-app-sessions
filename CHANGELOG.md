@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- The recording of the screen. `SessionReplayRecorder` puts frames into segments (`.agsr`, `SessionReplaySegment`),
+  keeps them on the device (50 MB, 7 days; a session stops at 30 minutes or 20 MB) and sends them with a
+  `SessionReplaySink` by the sink's answer: `record` sends everything, `buffer` keeps the last 60 seconds and
+  sends them when a priority condition is met (`AppSessions.priorityHit`) or the previous session crashed, hung
+  or was killed. Metered networks carry priority sessions only, up to 3 MB a day.
+- `SessionCapture.startReplay(_:live:configuration:)` and `SessionReplayCapture`: at most one frame a second
+  (sooner after a new screen, a tap or a scroll that stops), the key window drawn at 1pt to 1px, painted black
+  where it must be hidden (text fields, editable text views, `.sessionMask()`, web views; with
+  `SessionMaskMode.textAndImages`, the default, every label, image and SwiftUI text and image layer too) and
+  written as JPEG off the main thread. A frame whose parts to hide cannot be placed is blank (`masking_failed`).
+  No frames while a finger is down or a scroll view moves, in Low Power Mode, when hot, under 20% of battery,
+  or when taking one is slow (p95 over 33 ms).
+- `SessionLiveStream` and `SessionLiveConnecting`: the device side of the live view (hello, events at once,
+  frames at up to 2 a second, `stop` and `rate`; batches every 5 seconds while connected).
+- `SessionRules.maskRects(scale:imageW:imageH:rects:)`, passing the shared `mask_rects` and `segment` tables.
+- A tap on a view with an `accessibilityIdentifier` and no `.sessionTarget` takes the identifier as its target.
+
+### Changed
+
+- `SessionSinkReply.accepted` carries `uploadToken` and `live`. `AppSessions` hands them to the recording
+  (`onUploadToken`, `onLiveOffer`) and reports `onEvent`, `onSessionStart` and `onPriority`.
+- `AppSessions.isCapturing` is true once the recording takes frames.
+- A tap target outside `^[a-z][a-z0-9_]{0,47}$` is left out instead of making the server refuse the batch.
+
 ## [0.2.0] - 2026-11-23
 
 ### Changed

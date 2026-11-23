@@ -3,11 +3,10 @@ import Testing
 @testable import SessionsCore
 
 /// Runs the light record's tables in `schema/cases/sessions` (copied by `scripts/sync-cases.sh`).
-/// Kotlin and TypeScript read the same files. `mask_rects` and `segment` belong to the recording,
-/// `aggregate` to the server.
+/// Kotlin and TypeScript read the same files. `aggregate` belongs to the server.
 struct SharedCasesTests {
     static let directory = Bundle.module.url(forResource: "Cases", withExtension: nil)!.appending(path: "sessions")
-    static let notHere: Set<String> = ["mask_rects", "segment", "aggregate"]
+    static let notHere: Set<String> = ["aggregate"]
 
     static let all: [(name: String, rule: String)] = {
         let files = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
@@ -26,7 +25,7 @@ struct SharedCasesTests {
 
     @Test func everyLightCaseIsRun() {
         #expect(Self.all.count == 98)
-        #expect(Self.names.count == 78)
+        #expect(Self.names.count == 91)
     }
 
     @Test(arguments: names)
@@ -134,6 +133,28 @@ struct SharedCasesTests {
             if let hash = s.hash { out["hash"] = Int(hash) }
             if let from = s.uploadFromT { out["upload_from_t"] = from }
             return out
+        case "mask_rects":
+            let image = input["image"] as! [String: Any]
+            let rects = (input["rects"] as! [Any]).map { value -> SessionRect? in
+                guard let rect = value as? [String: Any] else { return nil }
+                return SessionRect(x: double(rect["x"]), y: double(rect["y"]), w: double(rect["w"]), h: double(rect["h"]))
+            }
+            let found = SessionRules.maskRects(scale: double(input["scale"]), imageW: int(image["w"]), imageH: int(image["h"]), rects: rects)
+            var out: [String: Any] = ["drop": found.drop, "rects": found.rects.map { ["x": $0.x, "y": $0.y, "w": $0.w, "h": $0.h] }]
+            if let reason = found.reason { out["reason"] = reason.rawValue }
+            return out
+        case "segment":
+            let bytes = Data(base64Encoded: input["bytes"] as! String)!
+            do {
+                let segment = try SessionReplaySegment.decode(bytes)
+                // Written again, it reads the same.
+                let again = try SessionReplaySegment.decode(try segment.encoded())
+                #expect(again == segment)
+                let header = try JSONSerialization.jsonObject(with: JSONEncoder().encode(segment.header))
+                return ["header": header, "images": segment.images.map { $0.base64EncodedString() }]
+            } catch let error as SessionReplaySegment.DecodeError {
+                return ["error": error.rawValue]
+            }
         default:
             Issue.record("rule \(rule) is not run here")
             return [:]

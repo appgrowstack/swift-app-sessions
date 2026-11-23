@@ -15,11 +15,13 @@ let package = Package(
     ],
     products: [
         // Splitting sessions, the rules (rage, dead, quick back, end reason, scroll depth, tap
-        // position, sampling, kept props), the recorder, batches, the sink port and the two
-        // standalone sinks (a file and a debug log). Foundation and Observation only.
+        // position, sampling, kept props, mask rectangles), the recorder, batches, the sink port and
+        // the two standalone sinks (a file and a debug log), the recording's segments
+        // (`SessionReplayRecorder`) and the live view's device side. Foundation and Observation only.
         .library(name: "SessionsCore", targets: ["SessionsCore"]),
-        // UIKit: taps, the app's lifecycle, the keyboard, scroll views, hangs, MetricKit crashes
-        // and the device's values. Compiles to nothing outside UIKit.
+        // UIKit: taps, the app's lifecycle, the keyboard, scroll views, hangs, MetricKit crashes,
+        // the device's values and the recording's frames (`SessionReplayCapture`). Compiles to
+        // nothing outside UIKit.
         .library(name: "SessionsCapture", targets: ["SessionsCapture"]),
         // SwiftUI marks: `.sessionTarget`, `.sessionScroll`, `.sessionMask`, `.sessionNoCapture`.
         .library(name: "SessionsSwiftUI", targets: ["SessionsSwiftUI"]),
