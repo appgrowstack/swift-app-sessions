@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- The recording stopped for the rest of the session about 15 seconds after launch on the simulator: the frames'
+  main-thread time went over 33ms (p95) while the app was still laying out its first screens, and `degraded`
+  is kept for the session. The first 3 frames are no longer counted, and on the simulator (which draws on the
+  CPU) a slow frame only spaces frames out. On a device, 33ms still stops the session's recording.
+- Over 16ms (p95) a frame is taken every 2 seconds instead of every second (sessions.md 3.2), with
+  `SessionReplayFrameCost` holding the rule (`SessionReplayCapture.Configuration.cost`).
+- The capture no longer walks the views ten times a second while no frames are wanted, and a touch left
+  counted when the app went to the back no longer holds frames back after it comes to the front.
+
 ## [0.3.0] - 2026-11-23
 
 ### Added

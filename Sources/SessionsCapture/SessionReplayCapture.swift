@@ -11,6 +11,9 @@ import UIKit
 ///
 /// - At most one frame a second (two while watched live); sooner 0.3 seconds after a screen is
 ///   entered, 0.5 seconds after a tap and 0.2 seconds after a scroll stops
+/// - One frame every 2 seconds while taking one holds the main thread over 16ms (p95); the session's
+///   recording stops over 33ms (`degraded`, ``SessionReplayFrameCost``). Not on the simulator, whose
+///   times say nothing of a device's
 /// - Not while a finger is down or a scroll view is moving; not in Low Power Mode, when the device
 ///   is hot (`serious` or worse) or under 20% of battery and not charging
 /// - The key window is drawn at 1pt to 1px (`drawHierarchy(afterScreenUpdates: false)`), painted
@@ -30,13 +33,27 @@ public final class SessionReplayCapture {
         public var jpegQuality: Double
         /// The longest side of a frame in pixels (an iPad's window is scaled down to it).
         public var maxLongSide: Double
+        /// When frames are spaced out or stopped for holding the main thread too long.
+        public var cost: SessionReplayFrameCost
 
         public init(mask: SessionMaskMode = .marked, noCaptureScreens: Set<String> = [],
-                    jpegQuality: Double = 0.35, maxLongSide: Double = 1194) {
+                    jpegQuality: Double = 0.35, maxLongSide: Double = 1194,
+                    cost: SessionReplayFrameCost = Configuration.defaultCost) {
             self.mask = mask
             self.noCaptureScreens = noCaptureScreens
             self.jpegQuality = jpegQuality
             self.maxLongSide = maxLongSide
+            self.cost = cost
+        }
+
+        /// 16ms spaces frames out and 33ms stops the session's recording, on a device. The simulator
+        /// draws on the CPU, so there it only spaces them out.
+        public static var defaultCost: SessionReplayFrameCost {
+            #if targetEnvironment(simulator)
+            return SessionReplayFrameCost(stopP95Ms: nil)
+            #else
+            return SessionReplayFrameCost()
+            #endif
         }
     }
 
@@ -54,8 +71,9 @@ public final class SessionReplayCapture {
     private var touches = 0
     private var encoding = false
     private var ticks = 0
-    private var durations: [Double] = []
-    private var degradedSession: String?
+    private var cost: SessionReplayFrameCost
+    /// The session ``cost`` counts (it starts over with each session).
+    private var costSession: String?
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     init(capture: SessionCapture, recorder: SessionReplayRecorder, live: SessionLiveStream?, configuration: Configuration) {
@@ -63,6 +81,7 @@ public final class SessionReplayCapture {
         self.recorder = recorder
         self.live = live
         self.configuration = configuration
+        self.cost = configuration.cost
     }
 
     func start() {
@@ -116,6 +135,9 @@ public final class SessionReplayCapture {
     }
 
     func enterForeground() {
+        // A touch that ended while in the back (the recognizer was not told) must not hold frames back.
+        touches = 0
+        wasScrolling = false
         dueSoon(300)
     }
 
@@ -137,9 +159,9 @@ public final class SessionReplayCapture {
         if ticks % 50 == 0 { checkPower() }
         if ticks % 20 == 0 { recorder.tick() }
         guard UIApplication.shared.applicationState != .background else { return }
-        if degradedSession != nil, degradedSession != recorder.sessions.currentSessionID {
-            degradedSession = nil
-            durations = []
+        if costSession != recorder.sessions.currentSessionID {
+            costSession = recorder.sessions.currentSessionID
+            cost.reset()
             if recorder.paused == .degraded { recorder.paused = nil }
         }
         let screen = recorder.sessions.currentScreen
@@ -147,14 +169,20 @@ public final class SessionReplayCapture {
             lastScreen = screen
             dueSoon(300)
         }
+        let watched = live?.isConnected == true
+        // Nothing to take: do not walk the views ten times a second for nothing.
+        guard recorder.wantsFrames || watched else {
+            wasScrolling = false
+            return
+        }
         let scrolling = Self.keyWindow().flatMap { SessionCapture.mainScrollView(in: $0) }.map { $0.isTracking || $0.isDecelerating } ?? false
         if wasScrolling, !scrolling { dueSoon(200) }
         wasScrolling = scrolling
-        guard recorder.wantsFrames || live?.isConnected == true, !encoding, touches == 0, !scrolling else { return }
+        guard !encoding, touches == 0, !scrolling else { return }
         let now = Self.nowMs()
-        let interval = live?.isConnected == true ? 500 : 1000
+        let interval = cost.intervalMs(live: watched)
         guard now - lastCaptureAt >= interval else { return }
-        if dueAt == 0 { dueAt = lastCaptureAt + 1000 }
+        if dueAt == 0 { dueAt = lastCaptureAt + interval }
         guard now >= dueAt else { return }
         dueAt = 0
         lastCaptureAt = now
@@ -235,15 +263,9 @@ public final class SessionReplayCapture {
         live?.sendFrame(jpeg, mime: "image/jpeg", w: w, h: h, masked: masked, atMs: now)
     }
 
-    /// p95 over 33ms stops the session's recording (`degraded`).
+    /// Spaces frames out over 16ms (p95) and stops the session's recording over 33ms (`degraded`).
     private func noteDuration(_ ms: Double) {
-        durations.append(ms)
-        if durations.count > 30 { durations.removeFirst(durations.count - 30) }
-        guard durations.count >= 10 else { return }
-        let sorted = durations.sorted()
-        let p95 = sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.95))]
-        if p95 > 33 {
-            degradedSession = recorder.sessions.currentSessionID
+        if cost.add(ms) == .degraded, recorder.paused != .degraded {
             recorder.paused = .degraded
         }
     }
