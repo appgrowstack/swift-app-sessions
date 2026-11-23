@@ -16,8 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   or was killed. Metered networks carry priority sessions only, up to 3 MB a day.
 - `SessionCapture.startReplay(_:live:configuration:)` and `SessionReplayCapture`: at most one frame a second
   (sooner after a new screen, a tap or a scroll that stops), the key window drawn at 1pt to 1px, painted black
-  where it must be hidden (text fields, editable text views, `.sessionMask()`, web views; with
-  `SessionMaskMode.textAndImages`, the default, every label, image and SwiftUI text and image layer too) and
+  where the app marks it with `.sessionMask()` and over secure-entry (password) fields, which are always hidden
+  (`SessionMaskMode.marked`, the only mode; ordinary text fields, labels, images and web views are recorded as
+  shown), and
   written as JPEG off the main thread. A frame whose parts to hide cannot be placed is blank (`masking_failed`).
   No frames while a finger is down or a scroll view moves, in Low Power Mode, when hot, under 20% of battery,
   or when taking one is slow (p95 over 33 ms).

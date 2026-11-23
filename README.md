@@ -68,7 +68,7 @@ The package works on its own. To connect it to a server, enable the matching tra
 
 ### Recording the screen
 
-`SessionReplayRecorder` and `SessionCapture.startReplay(_:live:configuration:)` record the screen as frames: at most one a second (sooner after a new screen, a tap or a scroll that stops), drawn at 1pt to 1px and written as JPEG. Frames that look the same as the one before carry no image. Text fields, `.sessionMask()` and web views are always painted black before a frame leaves the main thread; with `mask: .textAndImages` (the default) every label, image and SwiftUI text and image layer is too. A frame whose parts to hide cannot be placed is dropped. Nothing is taken while a finger is down or a list is moving, in Low Power Mode, when the device is hot or under 20% of battery.
+`SessionReplayRecorder` and `SessionCapture.startReplay(_:live:configuration:)` record the screen as frames: at most one a second (sooner after a new screen, a tap or a scroll that stops), drawn at 1pt to 1px and written as JPEG. Frames that look the same as the one before carry no image. Only what the app marks with `.sessionMask()` is painted black before a frame leaves the main thread, and secure-entry (password) fields always are; everything else, ordinary text fields, labels, images and web views included, is recorded as shown (`mask: .marked`, the only mode). Mark the views that hold private text. A frame whose parts to hide cannot be placed is dropped. Nothing is taken while a finger is down or a list is moving, in Low Power Mode, when the device is hot or under 20% of battery.
 
 Frames go into segments (`.agsr`), kept on the device (50 MB, 7 days) and sent with a `SessionReplaySink` when the session's batch answer allows it: `record` sends everything, `buffer` keeps the last 60 seconds and sends them only when something went wrong in the session (a rage tap, a hang, a paywall closed without buying…). Segments go over Wi-Fi or another unmetered network; priority sessions also over a metered one, up to 3 MB a day. `SessionLiveStream` sends the same frames and the events at once while someone watches.
 
@@ -78,7 +78,7 @@ let recorder = SessionReplayRecorder(sessions: sessions, sink: replaySink)
 let live = SessionLiveStream(sessions: sessions, connector: liveConnector)  // optional
 let capture = SessionCapture(sessions: sessions)
 capture.start()
-capture.startReplay(recorder, live: live, configuration: .init(mask: .textAndImages, noCaptureScreens: ["photo_picker"]))
+capture.startReplay(recorder, live: live, configuration: .init(mask: .marked, noCaptureScreens: ["photo_picker"]))
 ```
 
 ## Installation

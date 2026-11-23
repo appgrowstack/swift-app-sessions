@@ -69,4 +69,11 @@ struct CaptureSceneTests {
         #expect(SessionBlankReason.noCapture.rawValue == "no_capture")
         #expect(SessionBlankReason.maskingFailed.rawValue == "masking_failed")
     }
+
+    // The manifest's `mask` has one value: only marked views (and password fields) are hidden.
+    @Test func maskModeIsMarkedOnly() throws {
+        #expect(SessionMaskMode.marked.rawValue == "marked")
+        #expect(SessionMaskMode(rawValue: "inputs") == nil)
+        #expect(SessionMaskMode(rawValue: "text_and_images") == nil)
+    }
 }

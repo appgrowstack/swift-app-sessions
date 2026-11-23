@@ -2,11 +2,10 @@ import Foundation
 
 /// How the recording hides what is on screen (the manifest's `mask`).
 public enum SessionMaskMode: String, Sendable, Codable, Equatable {
-    /// Text fields, `.sessionMask()` and web views.
-    case inputs
-    /// Also every layer of text and images. The default: a product loosens it to `inputs` only
-    /// after looking at its screens.
-    case textAndImages = "text_and_images"
+    /// Only what the app marks with `.sessionMask()`, and secure-entry (password) fields, which
+    /// are always hidden. Everything else (text fields, labels, images, web views) is recorded as
+    /// it is shown.
+    case marked
 }
 
 /// An open live connection (a WebSocket). Text messages are `sessions/live.schema.json`; a

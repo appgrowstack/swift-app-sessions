@@ -16,9 +16,9 @@ import UIKit
 /// - The key window is drawn at 1pt to 1px (`drawHierarchy(afterScreenUpdates: false)`), painted
 ///   black where it must be hidden before it leaves the main thread, and written as JPEG
 ///   (quality 0.35) on a background thread
-/// - Hidden always: text fields and editable text views (secure ones too), `.sessionMask()`, web
-///   views. With ``SessionMaskMode/textAndImages`` (the default) also every label, image view and
-///   SwiftUI text and image layer
+/// - Hidden: what the app marks with `.sessionMask()`, and secure-entry (password) fields, which
+///   cannot be unhidden (``SessionMaskMode/marked``). Everything else, ordinary text fields,
+///   labels, images and web views included, is recorded as shown
 /// - Blank frames (no picture) while ``SessionCapture/blankReason(noCaptureScreens:)`` has a reason,
 ///   or when a part to hide could not be placed (`masking_failed`)
 @MainActor
@@ -31,7 +31,7 @@ public final class SessionReplayCapture {
         /// The longest side of a frame in pixels (an iPad's window is scaled down to it).
         public var maxLongSide: Double
 
-        public init(mask: SessionMaskMode = .textAndImages, noCaptureScreens: Set<String> = [],
+        public init(mask: SessionMaskMode = .marked, noCaptureScreens: Set<String> = [],
                     jpegQuality: Double = 0.35, maxLongSide: Double = 1194) {
             self.mask = mask
             self.noCaptureScreens = noCaptureScreens
@@ -254,7 +254,6 @@ public final class SessionReplayCapture {
     /// not be found (the frame is then dropped).
     static func partsToHide(in window: UIWindow, mode: SessionMaskMode) -> [SessionRect?] {
         var parts: [SessionRect?] = []
-        let webView: AnyClass? = NSClassFromString("WKWebView")
         let bounds = window.bounds
         func add(_ rect: CGRect) {
             guard rect.origin.x.isFinite, rect.origin.y.isFinite, rect.width.isFinite, rect.height.isFinite else {
@@ -271,46 +270,23 @@ public final class SessionReplayCapture {
                 add(marker.convert(marker.bounds, to: window))
                 return
             }
-            if view is UITextField || (view as? UITextView)?.isEditable == true {
+            if isSecureEntry(view) {
                 add(view.convert(view.bounds, to: window))
                 return
-            }
-            if let webView, view.isKind(of: webView) {
-                add(view.convert(view.bounds, to: window))
-                return
-            }
-            if mode == .textAndImages {
-                if view is UILabel || view is UIImageView || view is UITextView || isDrawingView(view) {
-                    add(view.convert(view.bounds, to: window))
-                    return
-                }
             }
             view.subviews.forEach(visit)
         }
-        visit(window)
-        if mode == .textAndImages {
-            func visitLayer(_ layer: CALayer) {
-                if layer.isHidden || layer.opacity < 0.01 { return }
-                if isDrawingLayer(layer) {
-                    add(layer.convert(layer.bounds, to: window.layer))
-                    return
-                }
-                layer.sublayers?.forEach(visitLayer)
-            }
-            visitLayer(window.layer)
+        switch mode {
+        case .marked: visit(window)
         }
         return parts
     }
 
-    /// SwiftUI draws text and images into views and layers of its own (the classes Sentry masks).
-    static func isDrawingView(_ view: UIView) -> Bool {
-        let name = NSStringFromClass(type(of: view))
-        return name.contains("CGDrawingView") || name.contains("_UIGraphicsView") || name.contains("SwiftUI") && name.contains("ImageView")
-    }
-
-    static func isDrawingLayer(_ layer: CALayer) -> Bool {
-        let name = NSStringFromClass(type(of: layer))
-        return name.contains("CGDrawingLayer") || name.contains("ImageLayer")
+    /// A password field (`SecureField` is a `UITextField` with `isSecureTextEntry`): always hidden.
+    static func isSecureEntry(_ view: UIView) -> Bool {
+        if let field = view as? UITextField { return field.isSecureTextEntry }
+        if let text = view as? UITextView { return text.isSecureTextEntry }
+        return false
     }
 
     // MARK: - Off the main thread
