@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `SessionMaskNode` and `SessionRules.partsToHide(root:bounds:limit:)`: the search for the parts of a frame
+  to hide, apart from UIKit. A `.sessionMask()` or a password field is painted whole; a part whose place
+  cannot be told, or a hierarchy of more than 10,000 views, drops the frame (`masking_failed`).
+- `SessionRules.maskRects(scale:imageW:imageH:budgetMs:nowMs:find:)`: the search fails closed. When it
+  throws or takes over 16ms (`SessionRules.maskBudgetMs`), the frame is blank (`masking_failed`).
+
+### Changed
+
+- A text field or text view whose `textContentType` is `.password` or `.newPassword` is hidden like a
+  secure-entry field, so a password stays hidden while a "show password" button turns secure entry off.
+- A part to hide is painted where its view is and where it is drawn (its presentation layer), so a field that
+  moves under an animation stays covered.
+
+### Removed
+
+- `SessionMarkerView.maskFrames(in:)`. It found only `.sessionMask()` and missed password fields; the
+  recording uses `SessionRules.partsToHide(root:bounds:limit:)`.
+
 ## [0.3.1] - 2026-11-23
 
 ### Fixed

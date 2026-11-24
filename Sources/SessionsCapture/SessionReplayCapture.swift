@@ -19,11 +19,12 @@ import UIKit
 /// - The key window is drawn at 1pt to 1px (`drawHierarchy(afterScreenUpdates: false)`), painted
 ///   black where it must be hidden before it leaves the main thread, and written as JPEG
 ///   (quality 0.35) on a background thread
-/// - Hidden: what the app marks with `.sessionMask()`, and secure-entry (password) fields, which
-///   cannot be unhidden (``SessionMaskMode/marked``). Everything else, ordinary text fields,
-///   labels, images and web views included, is recorded as shown
+/// - Hidden: what the app marks with `.sessionMask()`, and password fields (secure text entry,
+///   `SecureField`, a `.password` or `.newPassword` content type), which cannot be unhidden
+///   (``SessionMaskMode/marked``). Everything else, ordinary text fields, labels, images and web
+///   views included, is recorded as shown
 /// - Blank frames (no picture) while ``SessionCapture/blankReason(noCaptureScreens:)`` has a reason,
-///   or when a part to hide could not be placed (`masking_failed`)
+///   or when a part to hide could not be placed or took over 16ms to find (`masking_failed`)
 @MainActor
 public final class SessionReplayCapture {
     public struct Configuration: Sendable {
@@ -219,7 +220,11 @@ public final class SessionReplayCapture {
             return
         }
         let started = CACurrentMediaTime()
-        let rects = SessionRules.maskRects(scale: scale, imageW: w, imageH: h, rects: Self.partsToHide(in: window, mode: configuration.mask))
+        let mode = configuration.mask
+        // Fail closed (SC8): parts that cannot be placed, or take over 16ms to find, drop the frame.
+        let rects = SessionRules.maskRects(scale: scale, imageW: w, imageH: h, nowMs: { CACurrentMediaTime() * 1000 }) {
+            Self.partsToHide(in: window, mode: mode)
+        }
         if rects.drop {
             recorder.add(.blank(.maskingFailed, w: w, h: h), atMs: now)
             return
@@ -272,43 +277,29 @@ public final class SessionReplayCapture {
 
     // MARK: - What to hide
 
-    /// The parts of `window` to paint over, in its points. Nil stands for a part whose place could
+    /// The parts of `window` to paint over, in its points: every `.sessionMask()` and every password
+    /// field, whatever the app marks (``SessionMaskView``). Nil stands for a part whose place could
     /// not be found (the frame is then dropped).
     static func partsToHide(in window: UIWindow, mode: SessionMaskMode) -> [SessionRect?] {
-        var parts: [SessionRect?] = []
         let bounds = window.bounds
-        func add(_ rect: CGRect) {
-            guard rect.origin.x.isFinite, rect.origin.y.isFinite, rect.width.isFinite, rect.height.isFinite else {
-                parts.append(nil)
-                return
-            }
-            let visible = rect.intersection(bounds)
-            guard !visible.isNull, visible.width > 0, visible.height > 0 else { return }
-            parts.append(SessionRect(x: visible.minX, y: visible.minY, w: visible.width, h: visible.height))
-        }
-        func visit(_ view: UIView) {
-            if view.isHidden || view.alpha < 0.01 { return }
-            if let marker = view as? SessionMarkerView, marker.kind == .mask {
-                add(marker.convert(marker.bounds, to: window))
-                return
-            }
-            if isSecureEntry(view) {
-                add(view.convert(view.bounds, to: window))
-                return
-            }
-            view.subviews.forEach(visit)
-        }
         switch mode {
-        case .marked: visit(window)
+        case .marked:
+            return SessionRules.partsToHide(root: SessionMaskView(view: window, window: window),
+                                            bounds: SessionRect(x: bounds.minX, y: bounds.minY, w: bounds.width, h: bounds.height))
         }
-        return parts
     }
 
-    /// A password field (`SecureField` is a `UITextField` with `isSecureTextEntry`): always hidden.
-    static func isSecureEntry(_ view: UIView) -> Bool {
-        if let field = view as? UITextField { return field.isSecureTextEntry }
-        if let text = view as? UITextView { return text.isSecureTextEntry }
+    /// A password field: always hidden, and not something the app can unmark. Secure text entry
+    /// (`SecureField` is a `UITextField` with `isSecureTextEntry`), and a field whose content type is
+    /// a password's, which stays hidden while a "show password" button turns secure entry off.
+    static func isPasswordField(_ view: UIView) -> Bool {
+        if let field = view as? UITextField { return field.isSecureTextEntry || isPasswordContent(field.textContentType) }
+        if let text = view as? UITextView { return text.isSecureTextEntry || isPasswordContent(text.textContentType) }
         return false
+    }
+
+    static func isPasswordContent(_ type: UITextContentType?) -> Bool {
+        type == .password || type == .newPassword
     }
 
     // MARK: - Off the main thread
@@ -342,6 +333,34 @@ public final class SessionReplayCapture {
     nonisolated static func nowMs() -> Int { Int((Date().timeIntervalSince1970 * 1000).rounded(.down)) }
 
     static func keyWindow() -> UIWindow? { SessionCapture.keyWindow() }
+}
+
+/// A view as ``SessionRules/partsToHide(root:bounds:limit:)`` walks it.
+@MainActor
+struct SessionMaskView: SessionMaskNode {
+    let view: UIView
+    let window: UIWindow
+
+    var isShown: Bool { !view.isHidden && view.alpha >= 0.01 }
+
+    var hidesWhole: Bool {
+        if let marker = view as? SessionMarkerView { return marker.kind == .mask }
+        return SessionReplayCapture.isPasswordField(view)
+    }
+
+    /// Where the view is and where it is drawn, together. `drawHierarchy(afterScreenUpdates: false)`
+    /// draws what is on the screen, which under an animation is the presentation layer's place and
+    /// not the frame's: both are painted over, so a field that moves is covered on either side.
+    var frameInWindow: SessionRect? {
+        var frame = view.convert(view.bounds, to: window)
+        if let shown = view.layer.presentation(), let windowShown = window.layer.presentation() {
+            frame = frame.union(shown.convert(shown.bounds, to: windowShown))
+        }
+        guard !frame.isNull, !frame.isInfinite else { return nil }
+        return SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height)
+    }
+
+    var children: [SessionMaskView] { view.subviews.map { SessionMaskView(view: $0, window: window) } }
 }
 
 /// A picture handed to the encoding thread. `CGImage` is immutable.

@@ -363,20 +363,6 @@ public final class SessionMarkerView: UIView {
         if let marker = view as? SessionMarkerView, marker.kind == .noCapture { return true }
         return view.subviews.contains { containsNoCapture($0) }
     }
-
-    /// The frames of every `.sessionMask()` in `window` (window coordinates).
-    public static func maskFrames(in window: UIWindow) -> [CGRect] {
-        var frames: [CGRect] = []
-        func visit(_ view: UIView) {
-            if view.isHidden { return }
-            if let marker = view as? SessionMarkerView, marker.kind == .mask {
-                frames.append(marker.convert(marker.bounds, to: window))
-            }
-            view.subviews.forEach(visit)
-        }
-        visit(window)
-        return frames
-    }
 }
 
 /// MetricKit's crash reports. They arrive on a background queue some time after the launch.
