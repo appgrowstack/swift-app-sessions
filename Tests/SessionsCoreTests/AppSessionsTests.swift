@@ -73,6 +73,24 @@ struct AppSessionsTests {
         #expect(second.dropFirst().first == .screen(t: 0, screen: "bookshelf", via: .unknown, w: 393, h: 852, orientation: .portrait))
     }
 
+    @Test func nowFollowsTheSessionAndTheScreenOffTheMainActor() async {
+        let sessions = make()
+        #expect(sessions.now == SessionNow())
+        sessions.start()
+        #expect(sessions.now == SessionNow(sessionID: "ses_test0000000000000001", screen: nil))
+        sessions.screen("bookshelf")
+        // Read from outside the main actor, as an analytics sink does when it tracks
+        let read = await Task.detached { sessions.now }.value
+        #expect(read == SessionNow(sessionID: "ses_test0000000000000001", screen: "bookshelf"))
+        clock.advance(ms: 60_000)
+        sessions.enterBackground()
+        clock.advance(ms: 1_800_000)
+        sessions.enterForeground()
+        #expect(sessions.now == SessionNow(sessionID: "ses_test0000000000000002", screen: "bookshelf"))
+        #expect(sessions.now.sessionID == sessions.currentSessionID)
+        #expect(sessions.now.screen == sessions.currentScreen)
+    }
+
     @Test func relaunchAfterBackgroundEndsAsBackgroundTimeout() async {
         let first = await launch()
         first.screen("bookshelf")

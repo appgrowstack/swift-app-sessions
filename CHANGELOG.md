@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `AppSessions.now` (`SessionNow`): the current session's id and screen, readable from any thread. For
+  tagging an event the app records elsewhere (an analytics event tracked off the main actor) with the
+  session it happened in.
+
 ## [0.4.0] - 2026-11-24
 
 ### Added

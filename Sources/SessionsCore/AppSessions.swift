@@ -45,7 +45,7 @@ public final class AppSessions {
     private let clock: any SessionClock
     private let ids: any SessionIDGenerating
 
-    private var state = SessionStoredState()
+    private var state = SessionStoredState() { didSet { publishNow() } }
     private var started = false
     private var backgroundAt: Int?
     private var lastFlushAt = 0
@@ -54,8 +54,10 @@ public final class AppSessions {
     private var dirty = false
     private var disabled = false
     private var window: SessionRect
-    private var navigator = Navigator()
+    private var navigator = Navigator() { didSet { publishNow() } }
     private var stack: [String] = []
+    /// The session and the screen as of the last change, for reading off the main actor (``now``).
+    private nonisolated let nowBox = SessionNowBox()
     private var rage: RageDetector
     private var backHint: (via: SessionBackVia, at: Int)?
     private var scrolls: [String: SessionRules.ScrollDepth] = [:]
@@ -117,6 +119,11 @@ public final class AppSessions {
     /// The session that ended last, for matching a late crash report to it.
     public var previousSessionStartedAt: Int? { state.lastClosed?.device.startedAt }
     public var currentScreen: String? { navigator.current }
+    /// The current session's id and screen, readable from any thread. For tagging what the app records
+    /// elsewhere (an analytics event tracked off the main actor) with the session it happened in.
+    /// The id is `nil` before ``start(exit:)`` and while no session is open; the screen until the
+    /// session's first screen.
+    public nonisolated var now: SessionNow { nowBox.value }
     /// Batches waiting for the sink.
     public var waitingBatches: Int { state.outbox.count + (state.open?.pending.isEmpty == false ? 1 : 0) }
 
@@ -546,4 +553,33 @@ public final class AppSessions {
     static func isScreenName(_ name: String) -> Bool {
         name.range(of: "^[a-z][a-z0-9_]{0,47}$", options: .regularExpression) != nil
     }
+}
+
+extension AppSessions {
+    private func publishNow() {
+        nowBox.set(SessionNow(sessionID: state.open?.device.sessionID, screen: navigator.current))
+    }
+}
+
+/// The session and the screen at one moment (``AppSessions/now``).
+public struct SessionNow: Sendable, Equatable {
+    /// The current session's id (`ses_` and 20 characters), `nil` when no session is open.
+    public var sessionID: String?
+    /// The screen the person is on, `nil` before the first screen of the session.
+    public var screen: String?
+
+    public init(sessionID: String? = nil, screen: String? = nil) {
+        self.sessionID = sessionID
+        self.screen = screen
+    }
+}
+
+/// Written on the main actor as the session or the screen changes, read from any thread.
+final class SessionNowBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored = SessionNow()
+
+    var value: SessionNow { lock.withLock { stored } }
+
+    func set(_ now: SessionNow) { lock.withLock { stored = now } }
 }
