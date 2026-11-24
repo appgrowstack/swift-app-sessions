@@ -175,6 +175,7 @@
       "rage": 1,
       "dead": 1,
       "quick_backs": 1,
+      "hangs": 0,
       "backs": 2,
       "entry_screen": "bookshelf",
       "exit_screen": "bookshelf"

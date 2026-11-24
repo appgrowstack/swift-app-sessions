@@ -1,13 +1,16 @@
 {
-  "description": "仮説の記録の結論の outcome（docs/design/insights.md 8.7節）。probability_better は仮説の側が良い確率。無作為に分けた実験（method が experiment）で、95%を超えた時だけ supported か rejected にする。境の値ちょうどは inconclusive。前後の比べ（before_after）は inconclusive から始め、本人だけが変えられる",
+  "description": "仮説の記録の結論の outcome（docs/design/insights.md 8.7節）。complete は数がそろって比べられたか。数が無い（result が null）か、そろわなかった（complete が false）時は unmeasured（検証できなかった）。probability_better は仮説の側が良い確率。無作為に分けた実験（method が experiment）で、95%を超えた時だけ supported か rejected にする。境の値ちょうどは inconclusive。前後の比べ（before_after）は数がそろっても inconclusive から始め、本人だけが変えられる",
   "vectors": [
-    { "description": "仮説の側が良い確率が95%を超える", "input": { "method": "experiment", "probability_better": 0.97 }, "expect": { "outcome": "supported" } },
-    { "description": "比べる側が良い確率が95%を超える", "input": { "method": "experiment", "probability_better": 0.02 }, "expect": { "outcome": "rejected" } },
-    { "description": "どちらも95%に届かない", "input": { "method": "experiment", "probability_better": 0.6 }, "expect": { "outcome": "inconclusive" } },
-    { "description": "ちょうど95%は超えていない", "input": { "method": "experiment", "probability_better": 0.95 }, "expect": { "outcome": "inconclusive" } },
-    { "description": "ちょうど5%は比べる側が良い確率が95%で、超えていない", "input": { "method": "experiment", "probability_better": 0.05 }, "expect": { "outcome": "inconclusive" } },
-    { "description": "前後の比べは、確率が高くても決めない", "input": { "method": "before_after", "probability_better": 0.99 }, "expect": { "outcome": "inconclusive" } },
-    { "description": "確率が分からない", "input": { "method": "experiment", "probability_better": null }, "expect": { "outcome": "inconclusive" } },
-    { "description": "数が無い結論", "input": null, "expect": { "outcome": "inconclusive" } }
+    { "description": "仮説の側が良い確率が95%を超える", "input": { "result": { "method": "experiment", "probability_better": 0.97 }, "complete": true }, "expect": { "outcome": "supported" } },
+    { "description": "比べる側が良い確率が95%を超える", "input": { "result": { "method": "experiment", "probability_better": 0.02 }, "complete": true }, "expect": { "outcome": "rejected" } },
+    { "description": "どちらも95%に届かない", "input": { "result": { "method": "experiment", "probability_better": 0.6 }, "complete": true }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど95%は超えていない", "input": { "result": { "method": "experiment", "probability_better": 0.95 }, "complete": true }, "expect": { "outcome": "inconclusive" } },
+    { "description": "ちょうど5%は比べる側が良い確率が95%で、超えていない", "input": { "result": { "method": "experiment", "probability_better": 0.05 }, "complete": true }, "expect": { "outcome": "inconclusive" } },
+    { "description": "前後の比べは、確率が高くても決めない", "input": { "result": { "method": "before_after", "probability_better": 0.99 }, "complete": true }, "expect": { "outcome": "inconclusive" } },
+    { "description": "数はそろったが確率が分からない（この指標は確率を出さない・差が0）", "input": { "result": { "method": "experiment", "probability_better": null }, "complete": true }, "expect": { "outcome": "inconclusive" } },
+    { "description": "数がそろわなかった（前の窓に記録が無い・実験の人数が足りない）", "input": { "result": { "method": "before_after", "probability_better": null }, "complete": false }, "expect": { "outcome": "unmeasured" } },
+    { "description": "数がそろわなかった時は、確率があっても決めない", "input": { "result": { "method": "experiment", "probability_better": 0.99 }, "complete": false }, "expect": { "outcome": "unmeasured" } },
+    { "description": "数が無い結論（指標・当てた日・実験が無い）", "input": { "result": null, "complete": false }, "expect": { "outcome": "unmeasured" } },
+    { "description": "数が無ければ、そろったと言われても比べられない", "input": { "result": null, "complete": true }, "expect": { "outcome": "unmeasured" } }
   ]
 }

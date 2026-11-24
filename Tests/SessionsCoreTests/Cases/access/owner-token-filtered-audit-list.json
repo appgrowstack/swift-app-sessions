@@ -1,0 +1,32 @@
+{
+  "description": "絞ったトークンで監査の一覧は403。監査は組織の全部の操作の跡なので、プロジェクトの無い読みでも通さない（?project= を付ければ通る）",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": [
+        "audit.read"
+      ],
+      "projects": [
+        "gamification-app"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "audit.read",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

@@ -64,6 +64,7 @@
       "rage": 0,
       "dead": 0,
       "quick_backs": 0,
+      "hangs": 0,
       "backs": 0,
       "entry_screen": "bookshelf",
       "exit_screen": "book_detail"

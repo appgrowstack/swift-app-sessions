@@ -1,0 +1,33 @@
+{
+  "description": "絞ったトークンで、プロジェクトの無い段階3の読み（データレイクの SQL）は403",
+  "org_humans": 1,
+  "caller": {
+    "credential": "user_token",
+    "principal_id": "usr_owner00000000001",
+    "step_up": true,
+    "memberships": [
+      {
+        "role": "owner",
+        "project": null
+      }
+    ],
+    "token": {
+      "scopes": null,
+      "level3_scopes": [
+        "insights.sql"
+      ],
+      "projects": [
+        "gamification-app"
+      ]
+    }
+  },
+  "operation": {
+    "permission": "insights.sql",
+    "project": null
+  },
+  "expect": {
+    "result": "deny",
+    "status": 403,
+    "code": "scope_missing"
+  }
+}

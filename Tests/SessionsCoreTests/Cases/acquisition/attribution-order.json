@@ -1,0 +1,85 @@
+{
+  "description": "人の紐付けの手がかりの順（docs/design/acquisition.md 4.1節）。core は上から最初に当たった物を使う。channels は登録したチャネル（id → 種類）、links は短いリンク（code → チャネルと階層）、apple は AdServices の答え（status と本文）。expect は acq_attribution の行のうち channel・kind・matched_by・campaign・group・term・creative。答えの無い Apple の 404・5xx は retry（何も書かず、端末が送り直す）",
+  "channels": { "apple-ads": "apple_ads", "seo": "web_search", "x": "social", "referral": "referral" },
+  "links": {
+    "seo-articles": { "channel": "seo", "campaign": "articles", "group": "" },
+    "Ab3dEf7h": { "channel": "x", "campaign": "launch", "group": "post-1" }
+  },
+  "vectors": [
+    {
+      "description": "Play Install Referrer の code は短いリンクのチャネルと階層。p（押したページのパス）があれば組にする",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=seo&code=seo-articles&p=%2Farticles%2Fhabit" },
+      "expect": { "channel": "seo", "kind": "web_search", "matched_by": "play_referrer", "campaign": "articles", "group": "/articles/habit", "term": "", "creative": "" }
+    },
+    {
+      "description": "Play の code が無ければ utm_source をチャネルの id に当てる。キャンペーンは utm_campaign・組は utm_content",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=x&utm_campaign=launch&utm_content=post-2" },
+      "expect": { "channel": "x", "kind": "social", "matched_by": "play_referrer", "campaign": "launch", "group": "post-2", "term": "", "creative": "" }
+    },
+    {
+      "description": "Play の既定の organic は手がかりにしない",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=google-play&utm_medium=organic" },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "登録の無い utm_source は決まらない人",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=tiktok&utm_campaign=a" },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "招待のリンクは referral の招待",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=invite&code=Inv1te0000000000", "invite": true },
+      "expect": { "channel": "referral", "kind": "referral", "matched_by": "invite", "campaign": "invite", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "ほかのアプリの紹介は referral の紹介で、組は紹介元のアプリ",
+      "input": { "platform": "android", "play_install_referrer": "utm_source=cross_promo&utm_medium=reading-memory&utm_campaign=settings" },
+      "expect": { "channel": "referral", "kind": "referral", "matched_by": "cross_promo", "campaign": "cross-promo", "group": "reading-memory", "term": "", "creative": "" }
+    },
+    {
+      "description": "最初の起動を開いた URL の utm",
+      "input": { "platform": "ios", "opened_url": "https://example.com/app?utm_source=x&utm_campaign=launch" },
+      "expect": { "channel": "x", "kind": "social", "matched_by": "opened_url", "campaign": "launch", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "AdServices はキャンペーン・広告グループ・キーワード・広告の id をそのまま階層と素材に",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 200, "body": { "attribution": true, "orgId": 1, "campaignId": 111, "adGroupId": 222, "keywordId": 333, "adId": 444, "conversionType": "Download", "claimType": "Click", "supplyPlacement": "SearchResults", "countryOrRegion": "JP", "clickDate": "2026-11-20T03:00Z" } } },
+      "expect": { "channel": "apple-ads", "kind": "apple_ads", "matched_by": "apple_ads", "campaign": "111", "group": "222", "term": "333", "creative": "444" }
+    },
+    {
+      "description": "Search Match で当たった人はキーワードの id が無く、語の階層が空",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 200, "body": { "attribution": true, "orgId": 1, "campaignId": 111, "adGroupId": 222, "adId": 444, "conversionType": "Download", "claimType": "Click", "countryOrRegion": "JP" } } },
+      "expect": { "channel": "apple-ads", "kind": "apple_ads", "matched_by": "apple_ads", "campaign": "111", "group": "222", "term": "", "creative": "444" }
+    },
+    {
+      "description": "審査の端末のテストの値（campaignId 1234567890）は決まらない人",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 200, "body": { "attribution": true, "orgId": 1234567890, "campaignId": 1234567890, "adGroupId": 1234567890, "keywordId": 12323222, "adId": 1234567890, "conversionType": "Download", "countryOrRegion": "US" } } },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "attribution: false は決まらない人",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 200, "body": { "attribution": false } } },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "Apple Ads を登録していないアプリの AdServices の答えは決まらない人",
+      "input": { "platform": "ios", "apple_ads_token": "t", "unregistered": ["apple-ads"], "apple": { "status": 200, "body": { "attribution": true, "orgId": 1, "campaignId": 111, "adGroupId": 222, "keywordId": 333, "adId": 444 } } },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "Apple の 404 は送り直す",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 404, "body": null } },
+      "expect": "retry"
+    },
+    {
+      "description": "Apple の 400（正しくないトークン）は決まらない人",
+      "input": { "platform": "ios", "apple_ads_token": "t", "apple": { "status": 400, "body": null } },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    },
+    {
+      "description": "手がかりが何も無ければ決まらない人",
+      "input": { "platform": "ios" },
+      "expect": { "channel": "unknown", "kind": "unknown", "matched_by": "none", "campaign": "", "group": "", "term": "", "creative": "" }
+    }
+  ]
+}
