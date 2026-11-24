@@ -12,7 +12,7 @@ import UIKit
 /// - At most one frame a second (two while watched live); sooner 0.3 seconds after a screen is
 ///   entered, 0.5 seconds after a tap and 0.2 seconds after a scroll stops
 /// - One frame every 2 seconds while taking one holds the main thread over 16ms (p95); the session's
-///   recording stops over 33ms (`degraded`, ``SessionReplayFrameCost``). Not on the simulator, whose
+///   recording is spaced to 5 seconds over 33ms and stops over 100ms (`degraded`, ``SessionReplayFrameCost``). Not on the simulator, whose
 ///   times say nothing of a device's
 /// - Not while a finger is down or a scroll view is moving; not in Low Power Mode, when the device
 ///   is hot (`serious` or worse) or under 20% of battery and not charging
@@ -47,7 +47,7 @@ public final class SessionReplayCapture {
             self.cost = cost
         }
 
-        /// 16ms spaces frames out and 33ms stops the session's recording, on a device. The simulator
+        /// 16ms and 33ms space frames out and 100ms stops the session's recording, on a device. The simulator
         /// draws on the CPU, so there it only spaces them out.
         public static var defaultCost: SessionReplayFrameCost {
             #if targetEnvironment(simulator)
@@ -268,9 +268,11 @@ public final class SessionReplayCapture {
         live?.sendFrame(jpeg, mime: "image/jpeg", w: w, h: h, masked: masked, atMs: now)
     }
 
-    /// Spaces frames out over 16ms (p95) and stops the session's recording over 33ms (`degraded`).
+    /// Spaces frames out over 16ms and 33ms (p95) and stops the session's recording over 100ms (`degraded`).
     private func noteDuration(_ ms: Double) {
-        if cost.add(ms) == .degraded, recorder.paused != .degraded {
+        let verdict = cost.add(ms)
+        recorder.frameCost = cost.percentiles
+        if verdict == .degraded, recorder.paused != .degraded {
             recorder.paused = .degraded
         }
     }

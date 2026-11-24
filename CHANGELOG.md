@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `replay_stats` (`SessionEvent.replayStats`, `SessionReplayStats`): before each batch, the frames taken, the
+  frames left without a picture and why, the main thread's time a frame took (p50, p95) and why the recording
+  stopped. The Kotlin SDK sent it already; without it a stopped recording left no trace on the server.
+
 - `SessionMaskNode` and `SessionRules.partsToHide(root:bounds:limit:)`: the search for the parts of a frame
   to hide, apart from UIKit. A `.sessionMask()` or a password field is painted whole; a part whose place
   cannot be told, or a hierarchy of more than 10,000 views, drops the frame (`masking_failed`).
@@ -16,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   throws or takes over 16ms (`SessionRules.maskBudgetMs`), the frame is blank (`masking_failed`).
 
 ### Changed
+
+- A slow device keeps recording. Over 33ms (p95) a frame is taken every 5 seconds (`SessionReplayFrameCost.Verdict.verySlow`);
+  only over 100ms does the session's recording stop (`degraded`). Stopping at 33ms left every App Store
+  session of the first app with its first 13 frames only.
 
 - A text field or text view whose `textContentType` is `.password` or `.newPassword` is hidden like a
   secure-entry field, so a password stays hidden while a "show password" button turns secure entry off.

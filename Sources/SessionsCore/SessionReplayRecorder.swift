@@ -125,7 +125,23 @@ public final class SessionReplayRecorder {
     /// Set by the capture while the device should not record (Low Power Mode, heat, a low battery,
     /// frames too slow to take). Frames are not taken; the light record goes on.
     public var paused: StopReason? {
-        didSet { if paused != nil { closeSegment() } }
+        didSet {
+            guard let paused else { return }
+            closeSegment()
+            if paused != oldValue { stoppedToReport = paused }
+        }
+    }
+
+    /// The main thread's time a frame took so far in the session (50th and 95th percentile), set by
+    /// the capture; goes out in the next `replay_stats`.
+    public var frameCost: (p50: Double, p95: Double)?
+    private var stats = Counts()
+    private var stoppedToReport: StopReason?
+
+    private struct Counts {
+        var captured = 0
+        var dropped = SessionReplayStats.Dropped()
+        var isEmpty: Bool { captured == 0 && dropped.isEmpty }
     }
 
     private var builder: Builder?
@@ -153,6 +169,19 @@ public final class SessionReplayRecorder {
         sessions.onUploadToken = { [weak self] sessionID, token in self?.tokenArrived(token, for: sessionID) }
         sessions.onPriority = { [weak self] sessionID in self?.priorityMet(in: sessionID) }
         sessions.onSessionStart = { [weak self] sessionID in self?.sessionStarted(sessionID) }
+        sessions.replayStats = { [weak self] in self?.takeStats() }
+    }
+
+    /// What the recording did since the last batch, or nil when there is nothing to say.
+    func takeStats() -> SessionReplayStats? {
+        let counts = stats
+        let stopped = stoppedToReport
+        guard !counts.isEmpty || stopped != nil else { return nil }
+        stats = Counts()
+        stoppedToReport = nil
+        return SessionReplayStats(captured: counts.captured, dropped: counts.dropped,
+                                  mainMsP50: (frameCost?.p50 ?? 0).rounded(), mainMsP95: (frameCost?.p95 ?? 0).rounded(),
+                                  stopped: stopped?.rawValue)
     }
 
     // MARK: - What the capture reads
@@ -189,12 +218,14 @@ public final class SessionReplayRecorder {
             meta = self.meta(for: id, startedAt: startedAt)
             meta.stopped = true
             save(meta)
+            stoppedToReport = .sessionLimit
             return
         }
         var current = builder ?? Builder(sessionID: id, seq: meta.nextSeq)
         switch frame {
         case .image(let data, let mime, let w, let h, let masked, let fingerprint):
             if fingerprint == current.lastFingerprint, current.frames.last?.kind != .blank {
+                stats.dropped.same += 1
                 current.frames.append(SessionReplayFrame(t: t, kind: .same, w: w, h: h, masked: masked))
             } else {
                 if current.imageBytes + data.count > configuration.segmentBytes, !current.frames.isEmpty {
@@ -203,12 +234,19 @@ public final class SessionReplayRecorder {
                     current = Builder(sessionID: id, seq: self.meta(for: id, startedAt: startedAt).nextSeq)
                 }
                 current.frames.append(SessionReplayFrame(t: t, kind: .image, mime: mime, w: w, h: h, masked: masked))
+                stats.captured += 1
                 current.images.append(data)
                 current.imageBytes += data.count
                 current.lastFingerprint = fingerprint
             }
             sessions.isCapturing = true
         case .blank(let reason, let w, let h):
+            switch reason {
+            case .noCapture: stats.dropped.no_capture += 1
+            case .secure: stats.dropped.secure += 1
+            case .maskingFailed: stats.dropped.masking_failed += 1
+            case .unsupported: stats.dropped.no_capture += 1
+            }
             current.frames.append(SessionReplayFrame(t: t, kind: .blank, w: max(1, w), h: max(1, h), masked: false, reason: reason))
             current.lastFingerprint = nil
         }

@@ -76,6 +76,38 @@ struct SessionReplayRecorderTests {
         #expect(segment.images.count == 1)
     }
 
+    @Test func theNextBatchSaysWhatTheRecordingDid() async throws {
+        let (sessions, recorder) = await launch(answer: .accepted(replay: .record, uploadToken: "1795900000." + String(repeating: "d", count: 64)))
+        clock.advance(ms: 1000)
+        recorder.add(image("x"), atMs: clock.nowMs())
+        clock.advance(ms: 1000)
+        recorder.add(image("x"), atMs: clock.nowMs())
+        clock.advance(ms: 1000)
+        recorder.add(.blank(.maskingFailed, w: 393, h: 852), atMs: clock.nowMs())
+        recorder.frameCost = (p50: 21.4, p95: 38.6)
+        recorder.paused = .degraded
+        await sessions.flush()
+        let events = await sink.batches.flatMap(\.events)
+        let stats = events.compactMap { event -> SessionReplayStats? in
+            if case .replayStats(_, let stats) = event { return stats }
+            return nil
+        }
+        #expect(stats == [SessionReplayStats(captured: 1, dropped: .init(same: 1, maskingFailed: 1), mainMsP50: 21, mainMsP95: 39, stopped: "degraded")])
+        // Nothing new: no second one.
+        await sessions.flush()
+        #expect(await sink.batches.flatMap(\.events).filter { $0.kind == "replay_stats" }.count == 1)
+    }
+
+    @Test func replayStatsRoundTrips() throws {
+        let event = SessionEvent.replayStats(t: 5000, stats: SessionReplayStats(captured: 3, dropped: .init(same: 2), mainMsP50: 12, mainMsP95: 30, stopped: nil))
+        let data = try JSONEncoder().encode(event)
+        let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["k"] as? String == "replay_stats")
+        #expect((json["dropped"] as? [String: Int]) == ["same": 2, "masking_failed": 0, "no_capture": 0, "secure": 0])
+        #expect(json["stopped"] == nil)
+        #expect(try JSONDecoder().decode(SessionEvent.self, from: data) == event)
+    }
+
     @Test func framesFasterThanOneASecondAreLeftOut() async throws {
         let (_, recorder) = await launch(answer: .accepted(replay: .record, uploadToken: "1795900000." + String(repeating: "c", count: 64)))
         clock.advance(ms: 1000)

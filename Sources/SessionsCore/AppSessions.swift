@@ -84,6 +84,9 @@ public final class AppSessions {
     public var onSessionStart: (@MainActor (String) -> Void)?
     /// A priority condition was met in a session (its id), while it runs or as it ends.
     public var onPriority: (@MainActor (String) -> Void)?
+    /// What the recording did since the last batch; asked for before each batch
+    /// (``SessionReplayRecorder`` sets it).
+    public var replayStats: (@MainActor () -> SessionReplayStats?)?
     private var priorityLog: [SessionEvent] = []
 
     public init(sink: any SessionSink,
@@ -353,6 +356,7 @@ public final class AppSessions {
         flushing = true
         defer { flushing = false }
         lastFlushAt = clock.nowMs()
+        if state.open != nil, let stats = replayStats?() { record(.replayStats(t: t(clock.nowMs()), stats: stats)) }
         batchPending()
         save()
         while let batch = state.outbox.first {
@@ -485,8 +489,11 @@ public final class AppSessions {
         if open.pending.count > configuration.maxPendingEvents {
             open.pending.removeFirst(open.pending.count - configuration.maxPendingEvents)
         }
-        open.lastKind = event.kind
-        open.lastT = max(open.lastT, event.t)
+        // The recording's numbers say nothing of how the session ended (a `hang` before them still does).
+        if case .replayStats = event {} else {
+            open.lastKind = event.kind
+            open.lastT = max(open.lastT, event.t)
+        }
         open.scrolls = pendingScrolls()
         state.open = open
         dirty = true

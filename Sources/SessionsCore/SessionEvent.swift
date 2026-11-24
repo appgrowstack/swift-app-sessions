@@ -18,13 +18,15 @@ public enum SessionEvent: Sendable, Equatable, Codable {
     case background(t: Int)
     case foreground(t: Int)
     case end(t: Int, reason: SessionEndReason)
+    /// The recording since the last batch (sessions.md 7.6 reads it).
+    case replayStats(t: Int, stats: SessionReplayStats)
 
     public var t: Int {
         switch self {
         case .start(let t, _, _, _), .screen(let t, _, _, _, _, _), .tap(let t, _, _, _, _), .rage(let t, _, _, _, _),
              .dead(let t, _, _, _), .back(let t, _, _), .quickBack(let t, _, _), .scroll(let t, _, _, _, _),
              .keyboard(let t, _), .event(let t, _, _, _), .mark(let t, _, _, _), .hang(let t, _),
-             .background(let t), .foreground(let t), .end(let t, _):
+             .background(let t), .foreground(let t), .end(let t, _), .replayStats(let t, _):
             return t
         }
     }
@@ -47,12 +49,14 @@ public enum SessionEvent: Sendable, Equatable, Codable {
         case .background: "background"
         case .foreground: "foreground"
         case .end: "end"
+        case .replayStats: "replay_stats"
         }
     }
 
     enum Key: String, CodingKey {
         case k, t, previous_end, previous_session_id, first, screen, via, w, h, orientation, x, y, target, count, ms
         case list, max_ratio, max_row, shown, name, props, props_dropped, kind, ref, side, reason
+        case captured, dropped, main_ms_p50, main_ms_p95, stopped
     }
 
     public struct UnknownKind: Error, CustomStringConvertible {
@@ -111,6 +115,13 @@ public enum SessionEvent: Sendable, Equatable, Codable {
             self = .foreground(t: t)
         case "end":
             self = .end(t: t, reason: try c.decode(SessionEndReason.self, forKey: .reason))
+        case "replay_stats":
+            let dropped = try c.decode(SessionReplayStats.Dropped.self, forKey: .dropped)
+            self = .replayStats(t: t, stats: SessionReplayStats(
+                captured: try c.decode(Int.self, forKey: .captured), dropped: dropped,
+                mainMsP50: try c.decode(Double.self, forKey: .main_ms_p50),
+                mainMsP95: try c.decode(Double.self, forKey: .main_ms_p95),
+                stopped: try c.decodeIfPresent(String.self, forKey: .stopped)))
         default:
             throw UnknownKind(k: k)
         }
@@ -172,6 +183,48 @@ public enum SessionEvent: Sendable, Equatable, Codable {
             break
         case .end(_, let reason):
             try c.encode(reason, forKey: .reason)
+        case .replayStats(_, let stats):
+            try c.encode(stats.captured, forKey: .captured)
+            try c.encode(stats.dropped, forKey: .dropped)
+            try c.encode(stats.mainMsP50, forKey: .main_ms_p50)
+            try c.encode(stats.mainMsP95, forKey: .main_ms_p95)
+            try c.encodeIfPresent(stats.stopped, forKey: .stopped)
         }
+    }
+}
+
+/// What the recording did since the last batch (`replay_stats` in `schema/sessions/batch.schema.json`):
+/// frames with a picture, frames without one and why, the main thread's time a frame took, and why
+/// the recording stopped when it did.
+public struct SessionReplayStats: Sendable, Equatable {
+    public struct Dropped: Sendable, Equatable, Codable {
+        public var same: Int
+        public var masking_failed: Int
+        public var no_capture: Int
+        public var secure: Int
+
+        public init(same: Int = 0, maskingFailed: Int = 0, noCapture: Int = 0, secure: Int = 0) {
+            self.same = same
+            self.masking_failed = maskingFailed
+            self.no_capture = noCapture
+            self.secure = secure
+        }
+
+        public var isEmpty: Bool { same == 0 && masking_failed == 0 && no_capture == 0 && secure == 0 }
+    }
+
+    public var captured: Int
+    public var dropped: Dropped
+    public var mainMsP50: Double
+    public var mainMsP95: Double
+    /// `ReplayStopReason`: why frames stopped in this stretch, if they did.
+    public var stopped: String?
+
+    public init(captured: Int, dropped: Dropped, mainMsP50: Double, mainMsP95: Double, stopped: String? = nil) {
+        self.captured = captured
+        self.dropped = dropped
+        self.mainMsP50 = mainMsP50
+        self.mainMsP95 = mainMsP95
+        self.stopped = stopped
     }
 }
