@@ -127,6 +127,7 @@ public final class SessionReplayRecorder {
     public var paused: StopReason? {
         didSet {
             guard let paused else { return }
+            sessions.framesStopped()
             closeSegment()
             if paused != oldValue { stoppedToReport = paused }
         }
@@ -219,6 +220,7 @@ public final class SessionReplayRecorder {
             meta.stopped = true
             save(meta)
             stoppedToReport = .sessionLimit
+            sessions.framesStopped()
             return
         }
         var current = builder ?? Builder(sessionID: id, seq: meta.nextSeq)
@@ -239,7 +241,7 @@ public final class SessionReplayRecorder {
                 current.imageBytes += data.count
                 current.lastFingerprint = fingerprint
             }
-            sessions.isCapturing = true
+            sessions.frameTaken(fingerprint: fingerprint, atMs: atMs)
         case .blank(let reason, let w, let h):
             switch reason {
             case .noCapture: stats.dropped.no_capture += 1
@@ -249,6 +251,7 @@ public final class SessionReplayRecorder {
             }
             current.frames.append(SessionReplayFrame(t: t, kind: .blank, w: max(1, w), h: max(1, h), masked: false, reason: reason))
             current.lastFingerprint = nil
+            sessions.frameTaken(fingerprint: nil, atMs: atMs)
         }
         builder = current
         let span = t - (current.frames.first?.t ?? t)

@@ -8,10 +8,15 @@ import UIKit
 /// window, the keyboard, the main scroll view's depth, hangs of the main thread and MetricKit's
 /// crash reports. Nothing here stops or delays a touch.
 ///
+/// The session starts when the app is in the front (`UIApplication.State.active`, or about to enter
+/// the front), not at launch: a launch in the back (a `BGTaskScheduler` task, a background fetch, a
+/// prewarm) ends the previous session and records nothing. When the person opens the app later, that
+/// starts a session of its own.
+///
 /// ```swift
 /// let sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")
 /// let capture = SessionCapture(sessions: sessions)
-/// capture.start()          // starts the session too
+/// capture.start()          // the session starts once the app is in the front
 /// ```
 @MainActor
 public final class SessionCapture {
@@ -31,10 +36,11 @@ public final class SessionCapture {
         self.store = store
     }
 
-    /// Starts the session and the observers. Call once, early in the launch.
+    /// Ends the previous session and starts the observers. Call once, early in the launch. The session
+    /// starts when the app is in the front.
     public func start(watchHangs: Bool = true) {
         guard observers.isEmpty else { return }
-        sessions.start()
+        sessions.closePrevious()
         let center = NotificationCenter.default
         observers.append(center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -42,12 +48,13 @@ public final class SessionCapture {
                 self?.replay?.enterBackground()
             }
         })
-        observers.append(center.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.sessions.enterForeground()
-                self?.replay?.enterForeground()
-            }
-        })
+        // Coming back from the back, and the first time in the front (also after a launch in the back).
+        // A return from Control Center or a system alert is active again without the back: nothing changes.
+        for name in [UIApplication.willEnterForegroundNotification, UIApplication.didBecomeActiveNotification] {
+            observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.enterForeground() }
+            })
+        }
         observers.append(center.addObserver(forName: UIResponder.keyboardDidShowNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.sessions.keyboard(shown: true) }
         })
@@ -74,6 +81,13 @@ public final class SessionCapture {
             self.sessions.previousSessionCrashReported()
         }
         MXMetricManager.shared.add(metrics)
+        // Started after the app was already in the front.
+        if UIApplication.shared.applicationState == .active { enterForeground() }
+    }
+
+    private func enterForeground() {
+        sessions.enterForeground()
+        replay?.enterForeground()
     }
 
     public func stop() {
@@ -339,8 +353,11 @@ public final class SessionMarkerView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
 
-    /// The name of the smallest target under `point` (window coordinates).
+    /// The name of the smallest target under `point` (window coordinates), on the screen in front: with
+    /// a sheet, a full screen cover or a popover up, only the targets on it count. A target of the screen
+    /// under it is still in the window and would take the tap's name otherwise.
     static func target(at point: CGPoint, in window: UIWindow) -> String? {
+        let root = frontView(in: window) ?? window
         var best: (String, CGFloat)?
         func visit(_ view: UIView) {
             if view.isHidden { return }
@@ -353,8 +370,21 @@ public final class SessionMarkerView: UIView {
             }
             view.subviews.forEach(visit)
         }
-        visit(window)
+        visit(root)
         return best?.0
+    }
+
+    /// The view of the screen presented last over the window's root (a sheet, a full screen cover, a
+    /// popover, an alert), or nil when nothing is presented. A screen on its way out does not count.
+    static func frontView(in window: UIWindow) -> UIView? {
+        var controller = window.rootViewController
+        var front: UIViewController?
+        while let presented = controller?.presentedViewController, !presented.isBeingDismissed {
+            front = presented
+            controller = presented
+        }
+        guard let view = front?.viewIfLoaded, view.window === window else { return nil }
+        return view
     }
 
     /// `view` or a view inside it carries `.sessionNoCapture()`. Hidden views count too: a mark

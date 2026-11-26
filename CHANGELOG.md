@@ -12,6 +12,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `AppSessions.now` (`SessionNow`): the current session's id and screen, readable from any thread. For
   tagging an event the app records elsewhere (an analytics event tracked off the main actor) with the
   session it happened in.
+- `AppSessions.closePrevious(exit:)`: ends the previous session and starts none; the next `enterForeground()`
+  starts the session. Same as kotlin-app-sessions.
+- `AppSessions.noteDismissByApp()`: the app closes the current screen itself (a sheet that closes once a long
+  press is done); the move back within 1 second is a `back` but not a `quick_back`.
+- Dead taps (`dead`): while the screen is recorded, a tap after which, for 1.5 seconds, no screen opened, no app
+  event came and the frame's fingerprint stayed the same (`SessionRules.isDead`). The Kotlin SDK made them
+  already; `SessionRules.isDead` was never called here.
+- `foreground_ms` on `background` (`SessionEvent.background(t:foregroundMs:)`) and `end`
+  (`SessionEvent.end(t:reason:foregroundMs:)`): the time the session spent in the front.
+  `OpenSessionRecord.foregroundMs` and `foregroundSince`, `ClosedSessionRecord.foregroundMs`.
+
+### Changed
+
+- `SessionCapture.start()` no longer starts a session at launch: it ends the previous one (`closePrevious`), and
+  the session starts when the app is in the front (`willEnterForeground`, `didBecomeActive`, or already active).
+  A launch in the background (a `BGTaskScheduler` task, a background fetch, a prewarm) records nothing, and the
+  person opening the app later starts a session of its own. Before, such a launch started a session with no tap
+  that the later visit joined, so the visit was neither split off nor counted.
+- A session that stayed in the background for 30 minutes ends as soon as anything is recorded in the background
+  after that (an analytics event of a background task), at the time it went to the background. Before, the event
+  joined the session and stretched it.
+- A screen named while no session is open is the first screen of the next session (`launch`).
+- With a sheet, a full screen cover, a popover or an alert presented, a tap takes the name of a
+  `.sessionTarget` on it only. Before, a target of the screen under the sheet could name the tap.
+- `AppSessions.isCapturing` is read-only: true while the recording's last frame of the session had a picture.
+- `start.first` is documented as the first session this SDK records on the install, not the app's first launch.
 
 ## [0.4.0] - 2026-11-24
 

@@ -67,7 +67,7 @@ struct AppSessionsTests {
         await sessions.flush()
         let events = await sink.events
         let first = events.filter { $0.session == "ses_test0000000000000001" }.map(\.event)
-        #expect(first.last == .end(t: 60_000, reason: .backgroundTimeout))
+        #expect(first.last == .end(t: 60_000, reason: .backgroundTimeout, foregroundMs: 60_000))
         let second = events.filter { $0.session == "ses_test0000000000000002" }.map(\.event)
         #expect(second.first == .start(t: 0, previousEnd: .backgroundTimeout, previousSessionID: "ses_test0000000000000001", first: false))
         #expect(second.dropFirst().first == .screen(t: 0, screen: "bookshelf", via: .unknown, w: 393, h: 852, orientation: .portrait))
@@ -103,7 +103,7 @@ struct AppSessionsTests {
         second.start()
         await second.waitForSending()
         let events = await sink.events.map(\.event)
-        #expect(events.contains(.end(t: 5000, reason: .backgroundTimeout)))
+        #expect(events.contains(.end(t: 5000, reason: .backgroundTimeout, foregroundMs: 5000)))
         #expect(events.last == .start(t: 0, previousEnd: .backgroundTimeout, previousSessionID: "ses_test0000000000000001", first: false))
     }
 
@@ -120,21 +120,21 @@ struct AppSessionsTests {
         let batches = await sink.batches.filter { $0.session.sessionID == "ses_test0000000000000001" }
         #expect(batches.map(\.seq) == [0, 1])
         #expect(batches[1].events.map(\.kind) == ["screen", "tap", "end"])
-        #expect(batches[1].events.last == .end(t: 2000, reason: .killed))
+        #expect(batches[1].events.last == .end(t: 2000, reason: .killed, foregroundMs: 2000))
     }
 
     @Test func hangMarkerLeftByAKilledHangEndsAsHung() async {
         _ = await launch()
         store.setHangMarker(true)
         _ = await launch()
-        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .hung)))
+        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .hung, foregroundMs: 0)))
         #expect(store.hangMarker() == false)
     }
 
     @Test func crashFromMetricKitAtLaunchEndsAsCrashed() async {
         _ = await launch()
         _ = await launch(exit: SessionExitInfo(metricKitCrash: true))
-        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .crashed)))
+        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .crashed, foregroundMs: 0)))
     }
 
     @Test func lateMetricKitCrashSendsTheEndAgain() async throws {
@@ -143,7 +143,7 @@ struct AppSessionsTests {
         second.previousSessionCrashReported()
         await second.waitForSending()
         let previous = await sink.batches.filter { $0.session.sessionID == "ses_test0000000000000001" }
-        #expect(previous.flatMap(\.events).filter { $0.kind == "end" } == [.end(t: 0, reason: .killed), .end(t: 0, reason: .crashed)])
+        #expect(previous.flatMap(\.events).filter { $0.kind == "end" } == [.end(t: 0, reason: .killed, foregroundMs: 0), .end(t: 0, reason: .crashed, foregroundMs: 0)])
         #expect(previous.map(\.seq) == [0, 1, 2])
         second.previousSessionCrashReported()
         await second.waitForSending()
@@ -153,7 +153,129 @@ struct AppSessionsTests {
     @Test func androidUserClosedFromExitInfo() async {
         _ = await launch(platform: .android)
         _ = await launch(platform: .android, exit: SessionExitInfo(exitReason: "REASON_USER_REQUESTED"))
-        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .userClosed)))
+        #expect(await sink.events.map(\.event).contains(.end(t: 0, reason: .userClosed, foregroundMs: 0)))
+    }
+
+    // MARK: - Launches in the back
+
+    @Test func aLaunchInTheBackRecordsNothingUntilTheFront() async throws {
+        let sessions = make()
+        sessions.closePrevious()
+        // A background task: SwiftUI builds the first screen and the app records an event, out of sight
+        sessions.observe("screen_viewed", ["screen": .string("home")])
+        sessions.observe("avoid_review_scheduled")
+        sessions.tap(x: 100, y: 100)
+        await sessions.flush()
+        #expect(sessions.currentSessionID == nil)
+        #expect(await sink.batches.isEmpty)
+        #expect(store.stored?.running == false)
+
+        // The person opens the app later: a session of its own, on the screen built in the back
+        clock.advance(ms: 112 * 60_000)
+        sessions.enterForeground()
+        await sessions.flush()
+        #expect(sessions.currentSessionID == "ses_test0000000000000001")
+        #expect(sessions.currentSessionStartedAt == clock.nowMs())
+        #expect(await sink.events.map(\.event) == [
+            .start(t: 0, previousEnd: .unknown, previousSessionID: nil, first: true),
+            .screen(t: 0, screen: "home", via: .launch, w: 393, h: 852, orientation: .portrait)
+        ])
+        #expect(store.stored?.running == true)
+    }
+
+    @Test func theFrontAgainOnlyComesBack() async {
+        let sessions = make()
+        sessions.closePrevious()
+        sessions.enterForeground()
+        sessions.enterForeground()   // didBecomeActive after willEnterForeground
+        sessions.screen("bookshelf")
+        sessions.enterBackground()
+        clock.advance(ms: 1000)
+        sessions.enterForeground()
+        sessions.enterForeground()
+        await sessions.flush()
+        #expect(await kinds() == ["start", "screen", "background", "foreground"])
+    }
+
+    @Test func enterForegroundBeforeClosePreviousDoesNothing() async {
+        let sessions = make()
+        sessions.enterForeground()
+        #expect(sessions.currentSessionID == nil)
+        await sessions.flush()
+        #expect(await sink.batches.isEmpty)
+    }
+
+    @Test func aSessionLeftInTheBackEndsBeforeWhatATaskInTheBackRecords() async {
+        let sessions = make()
+        sessions.start()
+        sessions.screen("bookshelf")
+        clock.advance(ms: 10_000)
+        sessions.enterBackground()
+        // A task in the back, 76 minutes later, in the same process
+        clock.advance(ms: 76 * 60_000)
+        sessions.observe("avoid_review_scheduled")
+        #expect(sessions.currentSessionID == nil)
+        clock.advance(ms: 60_000)
+        sessions.enterForeground()
+        await sessions.flush()
+        let first = await sink.events.filter { $0.session == "ses_test0000000000000001" }.map(\.event)
+        #expect(first.last == .end(t: 10_000, reason: .backgroundTimeout, foregroundMs: 10_000))
+        #expect(!first.contains { if case .event = $0 { true } else { false } })
+        let second = await sink.events.filter { $0.session == "ses_test0000000000000002" }.map(\.event)
+        #expect(second == [
+            .start(t: 0, previousEnd: .backgroundTimeout, previousSessionID: "ses_test0000000000000001", first: false),
+            .screen(t: 0, screen: "bookshelf", via: .unknown, w: 393, h: 852, orientation: .portrait)
+        ])
+    }
+
+    // MARK: - Time in the front
+
+    @Test func theTimeInTheFrontGoesWithBackgroundAndEnd() async {
+        let sessions = make()
+        sessions.start()
+        clock.advance(ms: 20_000)
+        sessions.enterBackground()
+        clock.advance(ms: 10 * 60_000)
+        sessions.enterForeground()
+        clock.advance(ms: 5000)
+        sessions.enterBackground()
+        clock.advance(ms: 1_800_000)
+        sessions.enterForeground()
+        await sessions.flush()
+        let first = await sink.events.filter { $0.session == "ses_test0000000000000001" }.map(\.event)
+        #expect(first.filter { $0.kind == "background" } == [
+            .background(t: 20_000, foregroundMs: 20_000),
+            .background(t: 625_000, foregroundMs: 25_000)
+        ])
+        #expect(first.last == .end(t: 625_000, reason: .backgroundTimeout, foregroundMs: 25_000))
+    }
+
+    @Test func aSessionKilledInTheFrontCountsItsFrontToTheLastEvent() async {
+        let first = await launch()
+        clock.advance(ms: 3000)
+        first.enterBackground()
+        clock.advance(ms: 60_000)
+        first.enterForeground()
+        clock.advance(ms: 4000)
+        first.observe("book_added")
+        await first.flush()
+        _ = await launch()
+        let ends = await sink.events.filter { $0.session == "ses_test0000000000000001" }.map(\.event).filter { $0.kind == "end" }
+        #expect(ends == [.end(t: 67_000, reason: .killed, foregroundMs: 7000)])
+    }
+
+    @Test func aRecordKeptByAnOlderVersionSendsNoTimeInTheFront() async throws {
+        let first = await launch()
+        clock.advance(ms: 2000)
+        first.observe("book_added")
+        await first.flush()
+        var kept = try #require(store.stored)
+        kept.open?.foregroundMs = nil
+        kept.open?.foregroundSince = nil
+        store.save(kept)
+        _ = await launch()
+        let ends = await sink.events.filter { $0.session == "ses_test0000000000000001" }.map(\.event).filter { $0.kind == "end" }
+        #expect(ends == [.end(t: 2000, reason: .killed, foregroundMs: nil)])
     }
 
     // MARK: - Screens and taps
@@ -176,6 +298,44 @@ struct AppSessionsTests {
             .quickBack(t: 6500, screen: "book_detail", ms: 1500),
             .screen(t: 6500, screen: "bookshelf", via: .pop, w: 393, h: 852, orientation: .portrait)
         ])
+    }
+
+    @Test func aScreenTheAppClosesItselfIsNotAQuickBack() async {
+        let sessions = make()
+        sessions.start()
+        sessions.screen("home")
+        clock.advance(ms: 5000)
+        sessions.screen("habit_achieve", op: .sheet)
+        clock.advance(ms: 800)
+        // A long press achieved the habit and the sheet closes itself
+        sessions.noteDismissByApp()
+        clock.advance(ms: 300)
+        sessions.screen("home", op: .dismiss)
+        // The person opens it again and closes it at once
+        clock.advance(ms: 2000)
+        sessions.screen("habit_achieve", op: .sheet)
+        clock.advance(ms: 900)
+        sessions.screen("home", op: .dismiss)
+        await sessions.flush()
+        let moves = await sink.events.map(\.event).filter { ["back", "quick_back"].contains($0.kind) }
+        #expect(moves == [
+            .back(t: 6100, screen: "habit_achieve", via: .button),
+            .back(t: 9000, screen: "habit_achieve", via: .button),
+            .quickBack(t: 9000, screen: "habit_achieve", ms: 900)
+        ])
+    }
+
+    @Test func aDismissNotedLongBeforeDoesNotHideAQuickBack() async {
+        let sessions = make()
+        sessions.start()
+        sessions.screen("home")
+        sessions.noteDismissByApp()
+        clock.advance(ms: 5000)
+        sessions.screen("habit_achieve", op: .sheet)
+        clock.advance(ms: 500)
+        sessions.screen("home", op: .dismiss)
+        await sessions.flush()
+        #expect(await kinds().filter { $0 == "quick_back" }.count == 1)
     }
 
     @Test func tabAndSheetAreNotInferred() async {
@@ -203,6 +363,116 @@ struct AppSessionsTests {
         #expect(events.contains(.tap(t: 200, x: 7634, y: 8216, screen: "book_detail", target: "save_button")))
         #expect(events.filter { $0.kind == "rage" } == [.rage(t: 600, x: 7634, y: 8216, count: 4, screen: "book_detail")])
         #expect(!events.contains { $0.kind == "dead" })
+    }
+
+    // MARK: - Dead taps
+
+    /// A session on `book_detail` whose recording took a frame with fingerprint `a` at t = 0.
+    func recording() -> AppSessions {
+        let sessions = make()
+        sessions.start()
+        sessions.screen("book_detail")
+        sessions.frameTaken(fingerprint: "a", atMs: clock.nowMs())
+        return sessions
+    }
+
+    func deads() async -> [SessionEvent] {
+        await sink.events.map(\.event).filter { $0.kind == "dead" }
+    }
+
+    @Test func aTapThatChangedNothingIsDead() async {
+        let sessions = recording()
+        #expect(sessions.isCapturing)
+        clock.advance(ms: 1000)
+        sessions.tap(x: 196.5, y: 426, target: "save_button")
+        let tapAt = clock.nowMs()
+        sessions.frameTaken(fingerprint: "a", atMs: tapAt + 500)
+        sessions.frameTaken(fingerprint: "a", atMs: tapAt + 1400)
+        clock.advance(ms: 1600)
+        sessions.tick()
+        // Not judged until the frames taken in the 1.5 seconds have had time to be written
+        #expect(await deads().isEmpty)
+        clock.advance(ms: 1000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads() == [.dead(t: 1000, x: 5000, y: 5000, screen: "book_detail")])
+    }
+
+    @Test func aTapThatChangedTheFrameIsNotDead() async {
+        let sessions = recording()
+        sessions.tap(x: 100, y: 100)
+        sessions.frameTaken(fingerprint: "b", atMs: clock.nowMs() + 700)
+        clock.advance(ms: 3000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads().isEmpty)
+    }
+
+    @Test func aTapFollowedByAnAppEventOrAScreenIsNotDead() async {
+        let sessions = recording()
+        sessions.tap(x: 100, y: 100)
+        clock.advance(ms: 300)
+        sessions.observe("habit_achieved")
+        sessions.frameTaken(fingerprint: "a", atMs: clock.nowMs() + 200)
+        clock.advance(ms: 3000)
+        sessions.tap(x: 100, y: 100)
+        clock.advance(ms: 300)
+        sessions.screen("settings")
+        sessions.frameTaken(fingerprint: "a", atMs: clock.nowMs() + 200)
+        clock.advance(ms: 3000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads().isEmpty)
+    }
+
+    @Test func withoutFramesNoTapIsDead() async {
+        let sessions = make()
+        sessions.start()
+        sessions.screen("book_detail")
+        #expect(!sessions.isCapturing)
+        sessions.tap(x: 100, y: 100)
+        clock.advance(ms: 3000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads().isEmpty)
+    }
+
+    @Test func aStoppedRecordingJudgesNoTap() async {
+        // Paused (Low Power Mode, heat) or stopped for the session: no tap is judged until the next frame with a picture
+        let sessions = recording()
+        sessions.framesStopped()
+        #expect(!sessions.isCapturing)
+        sessions.tap(x: 100, y: 100)
+        clock.advance(ms: 3000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads().isEmpty)
+    }
+
+    @Test func threeDeadTapsMeetThePriorityCondition() async {
+        let sessions = recording()
+        for _ in 0..<3 {
+            clock.advance(ms: 3000)
+            sessions.tap(x: 100, y: 100)
+            sessions.frameTaken(fingerprint: "a", atMs: clock.nowMs() + 600)
+        }
+        clock.advance(ms: 3000)
+        sessions.tick()
+        #expect(sessions.priorityHit)
+    }
+
+    @Test func goingToTheBackForgetsTheTapsWaiting() async {
+        let sessions = recording()
+        sessions.tap(x: 100, y: 100)
+        sessions.frameTaken(fingerprint: "a", atMs: clock.nowMs() + 600)
+        sessions.enterBackground()
+        clock.advance(ms: 1000)
+        sessions.enterForeground()
+        #expect(!sessions.isCapturing)
+        clock.advance(ms: 3000)
+        sessions.tick()
+        await sessions.flush()
+        #expect(await deads().isEmpty)
     }
 
     @Test func tapsInASplitWindowAreMeasuredAgainstTheWindow() async {
@@ -358,7 +628,10 @@ struct AppSessionsTests {
         let batch = SessionBatch(session: device, seq: 0, events: [
             .start(t: 0, previousEnd: .unknown, previousSessionID: nil, first: true),
             .quickBack(t: 5, screen: "a", ms: 5),
-            .event(t: 6, name: "x", props: [:], propsDropped: false)
+            .event(t: 6, name: "x", props: [:], propsDropped: false),
+            .background(t: 7, foregroundMs: 7),
+            .end(t: 7, reason: .backgroundTimeout, foregroundMs: 7),
+            .end(t: 8, reason: .killed)
         ])
         let json = try JSONSerialization.jsonObject(with: batch.jsonData()) as! [String: Any]
         let session = json["session"] as! [String: Any]
@@ -368,6 +641,9 @@ struct AppSessionsTests {
         #expect(Set(events[0].keys) == ["k", "t", "previous_end", "first"])
         #expect(events[1]["k"] as? String == "quick_back")
         #expect(Set(events[2].keys) == ["k", "t", "name"])
+        #expect(Set(events[3].keys) == ["k", "t", "foreground_ms"])
+        #expect(Set(events[4].keys) == ["k", "t", "reason", "foreground_ms"])
+        #expect(Set(events[5].keys) == ["k", "t", "reason"])
         #expect(try JSONDecoder().decode(SessionBatch.self, from: batch.jsonData()) == batch)
     }
 

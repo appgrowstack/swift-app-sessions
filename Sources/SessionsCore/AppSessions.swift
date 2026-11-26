@@ -4,9 +4,14 @@ import Foundation
 /// analytics events (`SessionsCapture` does most of it on iOS); it splits sessions, applies the
 /// rules, keeps what it has between launches and hands batches to the sink.
 ///
+/// A session starts when the app comes to the front, not when its process starts: a launch in the
+/// back (a background task, a prewarm) records nothing, and the person opening the app later starts a
+/// session of its own.
+///
 /// ```swift
 /// let sessions = AppSessions(sink: FileSessionSink(), channel: .appstore)   // SessionsCapture
-/// sessions.start()                                                          // once, at launch
+/// sessions.closePrevious()                                                  // once, at launch
+/// sessions.enterForeground()                                                // when the app is in the front
 /// analytics.observe { name, props in sessions.observe(name, props) }        // the app's analytics bridge
 /// ```
 @MainActor
@@ -60,7 +65,24 @@ public final class AppSessions {
     private nonisolated let nowBox = SessionNowBox()
     private var rage: RageDetector
     private var backHint: (via: SessionBackVia, at: Int)?
+    /// When the app said it closes the current screen itself (``noteDismissByApp()``).
+    private var dismissByAppAt: Int?
     private var scrolls: [String: SessionRules.ScrollDepth] = [:]
+    /// The last screen named, kept while no session is open: a session that starts later starts on it.
+    private var lastScreen: String?
+
+    // Dead taps: a tap is judged 1.5 seconds later against the frames and the events that followed it.
+    private var lastFingerprint: String?
+    private var deadCandidates: [DeadCandidate] = []
+    private var afterTaps: [SessionRules.After] = []
+
+    private struct DeadCandidate {
+        var t: Int
+        var x: Int
+        var y: Int
+        var screen: String
+        var fingerprint: String
+    }
 
     /// The recording's decision from the sink for this session. Without one, `buffer`.
     public private(set) var replayMode: SessionReplayMode = .buffer
@@ -71,8 +93,9 @@ public final class AppSessions {
     public private(set) var previousSessionEndedBadly = false
     /// The previous session's id (set at the start of each session).
     public private(set) var previousSessionID: String?
-    /// The recording is taking frames (``SessionReplayRecorder`` sets it). Dead taps need frames.
-    public internal(set) var isCapturing = false
+    /// The recording is taking frames of this session and the last one had a picture
+    /// (``SessionReplayRecorder`` tells it). Taps are judged dead only then (``SessionRules/isDead(capturing:tapAt:fingerprintBefore:after:)``).
+    public var isCapturing: Bool { state.open != nil && backgroundAt == nil && lastFingerprint != nil }
     /// A live viewer is connected: batches go every 5 seconds instead of ``Configuration/flushIntervalMs``.
     public var liveConnected = false
 
@@ -129,16 +152,33 @@ public final class AppSessions {
 
     // MARK: - Lifecycle
 
-    /// Once, at launch: ends the previous session with what is known about it and starts a new one.
+    /// Once, at launch of a process known to show the app: ends the previous session with what is known
+    /// about it and starts a new one. A process may also start in the back (a background task, a
+    /// prewarm): `SessionsCapture` calls ``closePrevious(exit:)`` there instead, and the session starts
+    /// with ``enterForeground()``.
     public func start(exit: SessionExitInfo = .none) {
-        guard !started else { return }
+        guard closePreviousOnce(exit: exit) else { return }
+        begin(previousEnd: state.lastClosed?.reason ?? .unknown, previousID: state.lastClosed?.device.sessionID)
+        scheduleFlush()
+    }
+
+    /// Once, at launch: ends the previous session with what is known about it, and starts none. The next
+    /// ``enterForeground()`` starts the session, so a process that never comes to the front records nothing.
+    public func closePrevious(exit: SessionExitInfo = .none) {
+        guard closePreviousOnce(exit: exit) else { return }
+        state.running = false
+        save()
+        scheduleFlush()
+    }
+
+    /// False when it has run already.
+    private func closePreviousOnce(exit: SessionExitInfo) -> Bool {
+        guard !started else { return false }
         started = true
         AppSessions.current = self
         state = store.load() ?? SessionStoredState()
         let hung = store.hangMarker()
         store.setHangMarker(false)
-        var previousEnd = SessionEndReason.unknown
-        var previousID: String?
         if let open = state.open {
             let lastKind = hung ? "hang" : open.lastKind
             let decision = SessionRules.endReason(.init(
@@ -147,42 +187,56 @@ public final class AppSessions {
                 exitReason: exit.exitReason, crashHandler: state.crashRecorded))
             close(open, endAt: open.lastT, reason: decision.reason, lastKind: lastKind, runningFlag: state.running,
                   scrolls: open.scrolls)
-            previousEnd = decision.reason
-            previousID = open.device.sessionID
-        } else if let closed = state.lastClosed {
-            previousEnd = closed.reason
-            previousID = closed.device.sessionID
         }
         state.crashRecorded = false
-        begin(previousEnd: previousEnd, previousID: previousID, firstVia: .launch)
-        scheduleFlush()
+        return true
     }
 
     public func enterBackground() {
         guard state.open != nil, backgroundAt == nil else { return }
         closeRage()
         let now = clock.nowMs()
-        record(.background(t: t(now)))
+        let at = t(now)
+        let front = state.open?.foregroundMs(at: at)
+        record(.background(t: at, foregroundMs: front))
+        state.open?.foregroundMs = front
+        state.open?.foregroundSince = nil
         backgroundAt = now
         state.running = false
+        forgetTaps()
         save()
         scheduleFlush()
     }
 
+    /// The app came to the front. With no session yet in this process (it started in the back) it starts
+    /// one; after 30 minutes in the back, a new one on the same screen.
     public func enterForeground() {
-        guard let open = state.open, let at = backgroundAt else { return }
-        backgroundAt = nil
+        guard started else { return }
         let now = clock.nowMs()
-        if now - at >= SessionRules.backgroundTimeoutMs {
-            let screen = navigator.current
-            close(open, endAt: at - open.device.startedAt, reason: .backgroundTimeout, lastKind: "background",
-                  runningFlag: false, scrolls: pendingScrolls())
-            begin(previousEnd: .backgroundTimeout, previousID: open.device.sessionID, firstVia: .unknown)
-            if let screen { enterScreen(screen, via: .unknown) }
-        } else {
+        expireIfTimedOut(now)
+        if state.open == nil {
+            let resumed = backgroundAt != nil
+            begin(previousEnd: state.lastClosed?.reason ?? .unknown, previousID: state.lastClosed?.device.sessionID)
+            if let screen = lastScreen { enterScreen(screen, via: resumed ? .unknown : .launch) }
+        } else if backgroundAt != nil {
+            backgroundAt = nil
             record(.foreground(t: t(now)))
+            let since = t(now)
+            state.open?.foregroundSince = since
             state.running = true
+        } else {
+            return
         }
+        save()
+        scheduleFlush()
+    }
+
+    /// A session left in the back for 30 minutes or more ends now, at the time it went to the back, so
+    /// what a task in the back records later does not join it (nor its length).
+    private func expireIfTimedOut(_ now: Int) {
+        guard let open = state.open, let at = backgroundAt, now - at >= SessionRules.backgroundTimeoutMs else { return }
+        close(open, endAt: max(0, at - open.device.startedAt), reason: .backgroundTimeout, lastKind: "background",
+              runningFlag: false, scrolls: pendingScrolls())
         save()
         scheduleFlush()
     }
@@ -191,7 +245,9 @@ public final class AppSessions {
     /// cluster, keeps the state and sends a batch when one is due.
     public func tick() {
         guard state.open != nil, backgroundAt == nil else { return }
-        if let found = rage.expire(now: t(clock.nowMs())) { recordRage(found) }
+        let now = t(clock.nowMs())
+        if let found = rage.expire(now: now) { recordRage(found) }
+        resolveDead(now: now)
         if dirty { save() }
         let interval = liveConnected ? min(5000, configuration.flushIntervalMs) : configuration.flushIntervalMs
         if clock.nowMs() - lastFlushAt >= interval, state.open?.pending.isEmpty == false {
@@ -204,8 +260,10 @@ public final class AppSessions {
     /// A screen was shown. Without `op`, going to the screen under the current one is `pop`, the
     /// first screen of a session is `launch`, and anything else is `push`.
     public func screen(_ name: String, op: SessionRules.NavigationOp? = nil, by: SessionBackVia? = nil) {
-        guard state.open != nil, name != navigator.current else { return }
         let now = clock.nowMs()
+        expireIfTimedOut(now)
+        lastScreen = name
+        guard state.open != nil, name != navigator.current else { return }
         let move: SessionRules.NavigationOp
         if let op {
             move = op
@@ -222,6 +280,9 @@ public final class AppSessions {
             via = hint.via
         }
         backHint = nil
+        // The app closed the screen itself (``noteDismissByApp()``): going back is not the person's quick back.
+        let byApp = (move == .pop || move == .dismiss) && dismissByAppAt.map { now - $0 <= configuration.backHintMs } == true
+        dismissByAppAt = nil
         let events = navigator.move(.init(t: t(now), op: move, screen: name, by: via))
         switch move {
         case .launch, .tab: stack = [name]
@@ -237,9 +298,17 @@ public final class AppSessions {
             case .back(let t, let screen, let via):
                 record(.back(t: t, screen: screen, via: via))
             case .quickBack(let t, let screen, let ms):
-                record(.quickBack(t: t, screen: screen, ms: ms))
+                if !byApp { record(.quickBack(t: t, screen: screen, ms: ms)) }
             }
         }
+    }
+
+    /// The app is closing the current screen itself, not the person going back: a sheet that closes once
+    /// its work is done (after a long press, a save). The move back that follows within 1 second
+    /// (``Configuration/backHintMs``) is still a `back`, but not a `quick_back`. Call it right before
+    /// closing the screen.
+    public func noteDismissByApp() {
+        dismissByAppAt = clock.nowMs()
     }
 
     /// A back gesture (`gesture`) or Android's back key (`system`) is happening; the next screen
@@ -266,6 +335,9 @@ public final class AppSessions {
         // A name outside the schema's form would make the server refuse the whole batch.
         record(.tap(t: now, x: position.x, y: position.y, screen: screenName, target: target.flatMap { Self.isScreenName($0) ? $0 : nil }))
         if let found = rage.add(.init(t: now, x: x - window.x, y: y - window.y)) { recordRage(found) }
+        if let fingerprint = lastFingerprint, deadCandidates.count < Self.maxDeadCandidates {
+            deadCandidates.append(DeadCandidate(t: now, x: position.x, y: position.y, screen: screenName, fingerprint: fingerprint))
+        }
     }
 
     /// The shape of a scroll view on the current screen. `list` is a list marked
@@ -294,6 +366,7 @@ public final class AppSessions {
     }
 
     public func keyboard(shown: Bool) {
+        expireIfTimedOut(clock.nowMs())
         guard state.open != nil else { return }
         record(.keyboard(t: t(clock.nowMs()), shown: shown))
     }
@@ -304,10 +377,11 @@ public final class AppSessions {
     /// (``Configuration/marks``). `source` defaults to `common` for swift-analytics' shared catalog.
     /// A nil value stands for one that is not text, a number or yes/no; it is not kept.
     public func observe(_ name: String, _ props: [String: SessionValue?] = [:], source: SessionRules.EventSource? = nil) {
-        guard state.open != nil else { return }
+        expireIfTimedOut(clock.nowMs())
         if name == "screen_viewed", let screen = (props["screen"] ?? nil)?.string, Self.isScreenName(screen) {
             self.screen(screen)
         }
+        guard state.open != nil else { return }
         let now = t(clock.nowMs())
         let from = source ?? (SessionRules.commonCatalog.contains(name) ? .common : .app)
         let kept = SessionRules.keepProps(source: from, name: name, props: props, keepProps: configuration.keepProps)
@@ -318,6 +392,7 @@ public final class AppSessions {
 
     /// A mark the app knows of without an event (a ticket sent from swift-app-support).
     public func mark(_ kind: SessionMarkKind, ref: String, side: String? = nil) {
+        expireIfTimedOut(clock.nowMs())
         guard state.open != nil, !ref.isEmpty else { return }
         record(.mark(t: t(clock.nowMs()), kind: kind, ref: String(ref.prefix(80)), side: side))
     }
@@ -340,7 +415,8 @@ public final class AppSessions {
             platform: closed.device.platform, previousRecord: true, runningFlag: closed.runningFlag,
             lastEvent: closed.lastKind, lateMetricKitCrash: true))
         guard let revised = decision.revised, revised != closed.reason else { return }
-        appendToOutbox(SessionBatch(session: closed.device, seq: closed.nextSeq, events: [.end(t: closed.endT, reason: revised)]))
+        appendToOutbox(SessionBatch(session: closed.device, seq: closed.nextSeq,
+                                    events: [.end(t: closed.endT, reason: revised, foregroundMs: closed.foregroundMs)]))
         closed.nextSeq += 1
         closed.reason = revised
         state.lastClosed = closed
@@ -411,18 +487,23 @@ public final class AppSessions {
         return max(0, now - start)
     }
 
-    private func begin(previousEnd: SessionEndReason, previousID: String?, firstVia: SessionScreenVia) {
+    private func begin(previousEnd: SessionEndReason, previousID: String?) {
         let now = clock.nowMs()
         let info = deviceInfo()
         let installID = (info.installID ?? state.installID ?? ids.makeInstallID()).lowercased()
         state.installID = installID
         let device = SessionDevice(sessionID: ids.makeSessionID(), startedAt: now, info: info, installID: installID)
+        // `first`: the first session this SDK records on this install, not the app's first launch (an
+        // update that brings the SDK makes it true too). Who is new is told by `first_open`.
         let first = !state.hadSession
         state.hadSession = true
         state.running = true
         state.open = OpenSessionRecord(device: device, nextSeq: 0, lastKind: "start", lastT: 0,
                                        pending: [.start(t: 0, previousEnd: previousEnd, previousSessionID: previousID, first: first)])
         disabled = false
+        backgroundAt = nil
+        dismissByAppAt = nil
+        forgetTaps()
         replayMode = .buffer
         priorityHit = false
         priorityLog = state.open?.pending.first.map { [$0] } ?? []
@@ -441,13 +522,15 @@ public final class AppSessions {
     private func close(_ open: OpenSessionRecord, endAt endT: Int, reason: SessionEndReason, lastKind: String?,
                        runningFlag: Bool, scrolls: [OpenSessionRecord.Scroll]) {
         var record = open
+        let front = open.foregroundMs(at: endT)
+        let end = SessionEvent.end(t: endT, reason: reason, foregroundMs: front)
         if !disabled {
             record.pending += scrolls.map { .scroll(t: endT, screen: $0.screen, list: $0.list, maxRatio: $0.maxRatio, maxRow: $0.maxRow) }
-            record.pending.append(.end(t: endT, reason: reason))
+            record.pending.append(end)
         }
         state.open = record
         if !priorityHit, priorityLog.first.map({ if case .start = $0 { true } else { false } }) == true {
-            if !SessionRules.priorityHits(priorityLog + [.end(t: endT, reason: reason)]).isEmpty {
+            if !SessionRules.priorityHits(priorityLog + [end]).isEmpty {
                 priorityHit = true
                 onPriority?(open.device.sessionID)
             }
@@ -455,8 +538,9 @@ public final class AppSessions {
         batchPending()
         let next = state.open?.nextSeq ?? record.nextSeq
         state.lastClosed = ClosedSessionRecord(device: open.device, nextSeq: next, endT: endT, reason: reason,
-                                               lastKind: lastKind, runningFlag: runningFlag)
+                                               lastKind: lastKind, runningFlag: runningFlag, foregroundMs: front)
         state.open = nil
+        forgetTaps()
     }
 
     private func leaveScreen(at now: Int) {
@@ -504,6 +588,13 @@ public final class AppSessions {
         open.scrolls = pendingScrolls()
         state.open = open
         dirty = true
+        if !deadCandidates.isEmpty {
+            switch event {
+            case .screen: afterTaps.append(.init(t: event.t, k: .screen))
+            case .event: afterTaps.append(.init(t: event.t, k: .event))
+            default: break
+            }
+        }
         notePriority(event, sessionID: open.device.sessionID)
         onEvent?(event)
     }
@@ -522,6 +613,50 @@ public final class AppSessions {
         priorityHit = !SessionRules.priorityHits(priorityLog).isEmpty
         if priorityHit { onPriority?(sessionID) }
     }
+
+    // MARK: - Dead taps
+
+    /// A frame of the current session went into the recording at `atMs`: its fingerprint, or nil for a
+    /// blank frame (nothing to compare a tap with). ``SessionReplayRecorder`` calls it.
+    func frameTaken(fingerprint: String?, atMs: Int) {
+        guard let startedAt = state.open?.device.startedAt, backgroundAt == nil else { return }
+        if let fingerprint, !deadCandidates.isEmpty {
+            afterTaps.append(.init(t: max(0, atMs - startedAt), k: .frame, fingerprint: fingerprint))
+        }
+        lastFingerprint = fingerprint
+        resolveDead(now: t(clock.nowMs()))
+    }
+
+    /// The recording took its last frame for now (paused, stopped for the session): taps are not judged
+    /// until the next frame with a picture.
+    func framesStopped() {
+        lastFingerprint = nil
+    }
+
+    /// Taps whose 1.5 seconds are over become `dead` when nothing followed them. A frame is written a
+    /// moment after it is taken, so a tap waits ``deadSettleMs`` more before it is judged.
+    private func resolveDead(now: Int) {
+        guard !deadCandidates.isEmpty else { return }
+        let due = deadCandidates.filter { now > $0.t + SessionRules.deadWindowMs + Self.deadSettleMs }
+        guard !due.isEmpty else { return }
+        deadCandidates.removeFirst(due.count)
+        let after = afterTaps
+        for candidate in due where SessionRules.isDead(capturing: true, tapAt: candidate.t,
+                                                       fingerprintBefore: candidate.fingerprint, after: after) {
+            record(.dead(t: candidate.t, x: candidate.x, y: candidate.y, screen: candidate.screen))
+        }
+        if let oldest = deadCandidates.first?.t { afterTaps.removeAll { $0.t <= oldest } } else { afterTaps = [] }
+    }
+
+    private func forgetTaps() {
+        lastFingerprint = nil
+        deadCandidates = []
+        afterTaps = []
+    }
+
+    /// How long past its 1.5 seconds a tap waits, for the frames taken in them to be written.
+    static let deadSettleMs = 1000
+    static let maxDeadCandidates = 50
 
     private func batchPending() {
         guard var open = state.open, !open.pending.isEmpty else { return }

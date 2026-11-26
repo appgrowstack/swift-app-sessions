@@ -74,7 +74,7 @@ extension SessionRules {
                     hit(.paywallNoPurchase, t)
                     paywallOpen = false
                 }
-            case .end(let t, _):
+            case .end(let t, _, _):
                 if let shown = campaignShownAt, t - shown <= 60_000 { hit(.campaignQuickEnd, t) }
                 if paywallOpen { hit(.paywallNoPurchase, t) }
                 if first, !onboardingCompleted { hit(.onboardingUnfinished, t) }

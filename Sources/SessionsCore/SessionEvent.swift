@@ -3,6 +3,9 @@ import Foundation
 /// One thing that happened in a session (`SessionEvent` in `schema/sessions/batch.schema.json`).
 /// `t` is milliseconds from the start of the session. Positions are 0–10000 of the window.
 public enum SessionEvent: Sendable, Equatable, Codable {
+    /// `first`: the first session this SDK records on this install (again after a reinstall). Not the app's
+    /// first launch: someone who used the app before an update brought the SDK has it too. Tell new people by
+    /// the app's first-open event.
     case start(t: Int, previousEnd: SessionEndReason, previousSessionID: String?, first: Bool)
     case screen(t: Int, screen: String, via: SessionScreenVia, w: Double, h: Double, orientation: SessionOrientation)
     case tap(t: Int, x: Int, y: Int, screen: String, target: String?)
@@ -15,9 +18,11 @@ public enum SessionEvent: Sendable, Equatable, Codable {
     case event(t: Int, name: String, props: [String: SessionValue], propsDropped: Bool)
     case mark(t: Int, kind: SessionMarkKind, ref: String, side: String?)
     case hang(t: Int, ms: Int)
-    case background(t: Int)
+    /// `foregroundMs`: the time the session has been in the front so far.
+    case background(t: Int, foregroundMs: Int? = nil)
     case foreground(t: Int)
-    case end(t: Int, reason: SessionEndReason)
+    /// `foregroundMs`: the time the session was in the front, from its start to its end.
+    case end(t: Int, reason: SessionEndReason, foregroundMs: Int? = nil)
     /// The recording since the last batch (sessions.md 7.6 reads it).
     case replayStats(t: Int, stats: SessionReplayStats)
 
@@ -26,7 +31,7 @@ public enum SessionEvent: Sendable, Equatable, Codable {
         case .start(let t, _, _, _), .screen(let t, _, _, _, _, _), .tap(let t, _, _, _, _), .rage(let t, _, _, _, _),
              .dead(let t, _, _, _), .back(let t, _, _), .quickBack(let t, _, _), .scroll(let t, _, _, _, _),
              .keyboard(let t, _), .event(let t, _, _, _), .mark(let t, _, _, _), .hang(let t, _),
-             .background(let t), .foreground(let t), .end(let t, _), .replayStats(let t, _):
+             .background(let t, _), .foreground(let t), .end(let t, _, _), .replayStats(let t, _):
             return t
         }
     }
@@ -56,7 +61,7 @@ public enum SessionEvent: Sendable, Equatable, Codable {
     enum Key: String, CodingKey {
         case k, t, previous_end, previous_session_id, first, screen, via, w, h, orientation, x, y, target, count, ms
         case list, max_ratio, max_row, shown, name, props, props_dropped, kind, ref, side, reason
-        case captured, dropped, main_ms_p50, main_ms_p95, stopped
+        case captured, dropped, main_ms_p50, main_ms_p95, stopped, foreground_ms
     }
 
     public struct UnknownKind: Error, CustomStringConvertible {
@@ -110,11 +115,12 @@ public enum SessionEvent: Sendable, Equatable, Codable {
         case "hang":
             self = .hang(t: t, ms: try c.decode(Int.self, forKey: .ms))
         case "background":
-            self = .background(t: t)
+            self = .background(t: t, foregroundMs: try c.decodeIfPresent(Int.self, forKey: .foreground_ms))
         case "foreground":
             self = .foreground(t: t)
         case "end":
-            self = .end(t: t, reason: try c.decode(SessionEndReason.self, forKey: .reason))
+            self = .end(t: t, reason: try c.decode(SessionEndReason.self, forKey: .reason),
+                        foregroundMs: try c.decodeIfPresent(Int.self, forKey: .foreground_ms))
         case "replay_stats":
             let dropped = try c.decode(SessionReplayStats.Dropped.self, forKey: .dropped)
             self = .replayStats(t: t, stats: SessionReplayStats(
@@ -179,10 +185,13 @@ public enum SessionEvent: Sendable, Equatable, Codable {
             try c.encodeIfPresent(side, forKey: .side)
         case .hang(_, let ms):
             try c.encode(ms, forKey: .ms)
-        case .background, .foreground:
+        case .background(_, let foregroundMs):
+            try c.encodeIfPresent(foregroundMs, forKey: .foreground_ms)
+        case .foreground:
             break
-        case .end(_, let reason):
+        case .end(_, let reason, let foregroundMs):
             try c.encode(reason, forKey: .reason)
+            try c.encodeIfPresent(foregroundMs, forKey: .foreground_ms)
         case .replayStats(_, let stats):
             try c.encode(stats.captured, forKey: .captured)
             try c.encode(stats.dropped, forKey: .dropped)

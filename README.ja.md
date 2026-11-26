@@ -6,10 +6,12 @@ iOSアプリの中で人が何をしたかを、セッションごとに記録�
 
 ## 機能
 
-- **セッションの区切り。** 起動で1つ始まり、バックグラウンドに30分いた後に戻ったときにも始まる。idは`ses_`と20文字
-- **画面は計測の出来事から。** `screen_viewed`でその画面へ動く。今の画面の下の画面へ戻るのは`pop`で、`back`と、入ってから2秒以内なら`quick_back`も記録する
+- **セッションの区切り。** アプリが前に出たときに1つ始まり、バックグラウンドに30分いた後に戻ったときにも始まる。バックグラウンドでの起動（`BGTaskScheduler`の仕事・バックグラウンドの更新・事前の起動）では始めず、何も記録しない。後で本人がアプリを開くと、別のセッションが始まる。idは`ses_`と20文字。最初のセッションの`start`は`first: true`を持つ。これは「このSDKがこの端末で記録する最初のセッション」で、SDKを入れたバージョンに上げた前からの利用者でもtrueになる。新しい人かどうかは、アプリの初回起動の出来事で見分ける
+- **前に出ていた時間。** `background`と`end`は`foreground_ms`（セッションが前に出ていた時間）を持つ。バックグラウンドに置いたままの時間でセッションが長く見えない。アプリがバックグラウンドに行って30分を過ぎてから、バックグラウンドの仕事が記録した物はセッションに入れない
+- **画面は計測の出来事から。** `screen_viewed`でその画面へ動く。今の画面の下の画面へ戻るのは`pop`で、`back`と、入ってから2秒以内なら`quick_back`も記録する。アプリが自分で閉じる画面（長押しが終わると閉じるシートなど）は、閉じる直前に`noteDismissByApp()`を呼ぶと`quick_back`にしない
 - **タッチを止めないタップの記録。** 各ウィンドウに、何も認識しないジェスチャーの認識を足す。位置はウィンドウに対する0〜10000（iPadの分割のウィンドウも）。`.sessionTarget("…")`で要素に名前を付ける
 - **rage tap。** 最初のタップから1秒以内・30pt以内に3回以上
+- **dead tap。** 画面を録画している間、タップの後1.5秒、画面が開かず、アプリの出来事も無く、画面の絵も変わらなかったタップ
 - **スクロールの深さ。** 画面ごとに、主なスクロールビューの一番深い所を残す。`.sessionScroll("…")`と`.sessionRow(_:in:)`で名前を付けた一覧も
 - **終わり方。** `background_timeout`・`crashed`（MetricKit。レポートが遅れて届いても直す）・`hung`（監視のスレッド）・`killed`・`unknown`を次の起動で決める
 - **アプリの出来事は残す物を絞る。** 共通のカタログの出来事は値を残す。アプリ独自の出来事は`keepProps`に書いたプロパティだけを残す。48文字を超える文字列は捨てる
@@ -18,6 +20,21 @@ iOSアプリの中で人が何をしたかを、セッションごとに記録�
 - **依存なし。** Foundation・Observation・UIKit・MetricKitだけ。SwiftUIを使うのは`SessionsSwiftUI`だけ
 
 軽い記録は画素を持たない。録画（下）は持つ。`.sessionMask()`と`.sessionNoCapture()`は録画が読むマークを置く。`.sessionNoCapture()`を付けた画面は、見えている間と、その上に別の画面が重なっている間（pushした先・その画面から出したシート）、録画を撮らない。アラートとアクションシートも出ている間は撮らない。今撮ると撮らない理由は`SessionCapture.blankReason(noCaptureScreens:)`で分かる。
+
+### タップした物の名前
+
+タップには、指の下にある一番小さい`.sessionTarget("…")`の名前が付く。無ければ、当たった部品のアクセシビリティのidが付く。シート・全画面のカバー・ポップオーバー・アラートが出ている間は、その上の名前だけを見る。シートのボタンのタップに、下にある行の名前は付かない。同じビューの中に重ねて描いたパネル（出した画面でない自前の重ね物）は見分けられない。そのボタンには自分の`.sessionTarget`を付ける。
+
+本人の操作の後に画面が自分で閉じるときは、閉じる直前に`noteDismissByApp()`を呼ぶ。
+
+```swift
+Button("Hold to finish") {}
+    .onLongPressGesture {
+        store.achieve(habit)
+        AppSessions.current?.noteDismissByApp()  // the sheet closes itself: not a quick back
+        dismiss()
+    }
+```
 
 ### 記録の送り先
 
@@ -49,7 +66,7 @@ struct MyApp: App {
     init() {
         sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")  // keep the records on the device
         capture = SessionCapture(sessions: sessions)
-        capture.start()  // once, at launch: starts the session
+        capture.start()  // once, at launch; the session starts when the app is in the front
     }
 
     var body: some Scene {

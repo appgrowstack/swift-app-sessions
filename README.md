@@ -6,10 +6,12 @@ English | [Japanese](README.ja.md)
 
 ## Features
 
-- **Sessions split the usual way.** A launch starts one, and so does coming back after 30 minutes in the background. Each has an id (`ses_` and 20 letters)
-- **Screens from your analytics events.** `screen_viewed` moves to its screen. Going back to the screen under the current one is a `pop`, recorded with `back` and, within 2 seconds of entering, `quick_back`
+- **Sessions split the usual way.** The app coming to the front starts one, and so does coming back after 30 minutes in the background. A launch in the background (a `BGTaskScheduler` task, a background fetch, a prewarm) starts none and records nothing; the person opening the app later starts a session of its own. Each has an id (`ses_` and 20 letters). The first session's `start` carries `first: true`: the first session this SDK records on the device, which is also true for someone who used the app before an update brought the SDK. Tell new people by the app's own first-open event
+- **Time in the front.** `background` and `end` carry `foreground_ms`, the time the session spent in the front, so a session left in the background is not counted as long. What a task in the background records more than 30 minutes after the app went there does not join the session
+- **Screens from your analytics events.** `screen_viewed` moves to its screen. Going back to the screen under the current one is a `pop`, recorded with `back` and, within 2 seconds of entering, `quick_back`. A screen the app closes itself (a sheet that closes once a long press is done) is not a quick back when the app calls `noteDismissByApp()` right before
 - **Taps without touching your touches.** A recognizer on every window that never recognizes anything. Positions are 0–10000 of the window (iPad split windows included). `.sessionTarget("…")` names an element
 - **Rage taps.** Three or more taps within 1 second and 30 pt of the first
+- **Dead taps.** While the screen is recorded, a tap after which, for 1.5 seconds, no screen opened, no app event came and the picture did not change
 - **Scroll depth.** The main scroll view's deepest point per screen, and named lists with `.sessionScroll("…")` and `.sessionRow(_:in:)`
 - **How it ended.** `background_timeout`, `crashed` (MetricKit, also when the report comes late), `hung` (a watchdog thread), `killed` or `unknown`, decided at the next launch
 - **Your app's events, kept carefully.** Events of the shared catalog keep their values; your own events keep only the properties you list in `keepProps`. Text longer than 48 characters is dropped
@@ -18,6 +20,21 @@ English | [Japanese](README.ja.md)
 - **No dependencies.** Foundation, Observation, UIKit and MetricKit; SwiftUI only in `SessionsSwiftUI`
 
 The light record keeps no pixels; the recording (below) does. `.sessionMask()` and `.sessionNoCapture()` place marks it reads. A screen marked `.sessionNoCapture()` keeps the recording blank while it is shown and while it lies under the shown screen (a screen pushed on it, a sheet presented from it); alerts and action sheets keep it blank while they are up. `SessionCapture.blankReason(noCaptureScreens:)` gives the reason a frame taken now would be blank.
+
+### Naming what was tapped
+
+A tap takes the name of the smallest `.sessionTarget("…")` under the finger, or else the accessibility identifier of the control it hit. While a sheet, a full screen cover, a popover or an alert is presented, only the targets on it count, so a button on a sheet does not take the name of a row under it. A panel drawn over the screen in the same view (a custom overlay, not a presented screen) cannot be told apart: give its buttons a `.sessionTarget` of their own.
+
+When a screen closes itself after the person's action, call `noteDismissByApp()` right before closing it:
+
+```swift
+Button("Hold to finish") {}
+    .onLongPressGesture {
+        store.achieve(habit)
+        AppSessions.current?.noteDismissByApp()  // the sheet closes itself: not a quick back
+        dismiss()
+    }
+```
 
 ### Where the records go
 
@@ -49,7 +66,7 @@ struct MyApp: App {
     init() {
         sessions = AppSessions(sink: FileSessionSink(), channel: "appstore")  // keep the records on the device
         capture = SessionCapture(sessions: sessions)
-        capture.start()  // once, at launch: starts the session
+        capture.start()  // once, at launch; the session starts when the app is in the front
     }
 
     var body: some Scene {

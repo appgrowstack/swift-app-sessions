@@ -45,6 +45,10 @@ public struct OpenSessionRecord: Sendable, Equatable, Codable {
     public var pending: [SessionEvent]
     /// The current screen's scroll depths, sent when it is left (or when the session is ended at the next launch).
     public var scrolls: [Scroll]
+    /// The time in the front up to the last time it went to the back (nil: kept by an older version).
+    public var foregroundMs: Int?
+    /// When (`t`) it last came to the front, nil while it is in the back.
+    public var foregroundSince: Int?
 
     public struct Scroll: Sendable, Equatable, Codable {
         public var screen: String
@@ -54,13 +58,21 @@ public struct OpenSessionRecord: Sendable, Equatable, Codable {
     }
 
     public init(device: SessionDevice, nextSeq: Int, lastKind: String, lastT: Int, pending: [SessionEvent],
-                scrolls: [Scroll] = []) {
+                scrolls: [Scroll] = [], foregroundMs: Int? = 0, foregroundSince: Int? = 0) {
         self.device = device
         self.nextSeq = nextSeq
         self.lastKind = lastKind
         self.lastT = lastT
         self.pending = pending
         self.scrolls = scrolls
+        self.foregroundMs = foregroundMs
+        self.foregroundSince = foregroundSince
+    }
+
+    /// The time in the front from the start to `t`, or nil when an older version kept the record.
+    public func foregroundMs(at t: Int) -> Int? {
+        guard let foregroundMs else { return nil }
+        return foregroundMs + max(0, t - (foregroundSince ?? t))
     }
 }
 
@@ -73,6 +85,8 @@ public struct ClosedSessionRecord: Sendable, Equatable, Codable {
     /// What decided the reason, to decide it again with the late report.
     public var lastKind: String?
     public var runningFlag: Bool
+    /// The time it was in the front, sent again with a revised `end`.
+    public var foregroundMs: Int? = nil
 }
 
 public struct SessionStoredState: Sendable, Equatable, Codable {

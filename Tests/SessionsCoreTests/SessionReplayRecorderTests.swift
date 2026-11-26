@@ -61,6 +61,40 @@ struct SessionReplayRecorderTests {
         #expect(recorder.waitingSegments == 0)
     }
 
+    @Test func framesTellTheSessionWhetherTapsCanBeJudgedDead() async {
+        let (sessions, recorder) = await launch(answer: .accepted(replay: .buffer))
+        #expect(!sessions.isCapturing)
+        clock.advance(ms: 1000)
+        recorder.add(image("x"), atMs: clock.nowMs())
+        #expect(sessions.isCapturing)
+        clock.advance(ms: 1000)
+        recorder.add(.blank(.noCapture, w: 393, h: 852), atMs: clock.nowMs())
+        #expect(!sessions.isCapturing)
+        clock.advance(ms: 1000)
+        recorder.add(image("x"), atMs: clock.nowMs())
+        #expect(sessions.isCapturing)
+        recorder.paused = .lowPower
+        #expect(!sessions.isCapturing)
+    }
+
+    @Test func aTapOnAScreenThatDidNotChangeIsDead() async {
+        let (sessions, recorder) = await launch(answer: .accepted(replay: .buffer))
+        sessions.screen("habit_form")
+        clock.advance(ms: 1000)
+        recorder.add(image("form"), atMs: clock.nowMs())
+        clock.advance(ms: 100)
+        sessions.tap(x: 196.5, y: 800, target: "save")
+        clock.advance(ms: 900)
+        recorder.add(image("form"), atMs: clock.nowMs())
+        clock.advance(ms: 1000)
+        recorder.add(image("form"), atMs: clock.nowMs())
+        clock.advance(ms: 1000)
+        sessions.tick()
+        await sessions.flush()
+        let deads = await sink.events.map(\.event).filter { $0.kind == "dead" }
+        #expect(deads == [.dead(t: 1100, x: 5000, y: 9390, screen: "habit_form")])
+    }
+
     @Test func theSamePictureIsASameFrame() async throws {
         let (_, recorder) = await launch(answer: .accepted(replay: .record, uploadToken: "1795900000." + String(repeating: "b", count: 64)))
         clock.advance(ms: 1000)
