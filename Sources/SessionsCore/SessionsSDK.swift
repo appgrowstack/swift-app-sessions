@@ -5,5 +5,5 @@ public enum SessionsSDK {
     /// The package name (`swift-app-sessions`).
     public static let name = "swift-app-sessions"
     /// The released version: the newest `## [x.y.z]` section of the CHANGELOG (a test checks it).
-    public static let version = "0.4.0"
+    public static let version = "0.5.0"
 }
