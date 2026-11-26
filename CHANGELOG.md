@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-26
+
 ### Added
 
 - `AppSessions.now` (`SessionNow`): the current session's id and screen, readable from any thread. For
