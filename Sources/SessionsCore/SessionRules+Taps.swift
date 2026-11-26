@@ -28,6 +28,51 @@ extension SessionRules {
         return found
     }
 
+    /// A mark under the screen as the tap's name sees it: a named target (`.sessionTarget`) or the
+    /// root of a layer drawn over the screen (`.sessionLayer`). `layers` is the path of layers the
+    /// mark is in, outermost first; a layer's own mark ends with itself.
+    public struct TapMark: Sendable, Hashable {
+        public enum Kind: Sendable, Hashable {
+            case target(String)
+            case layer
+        }
+
+        public var kind: Kind
+        public var frame: SessionRect
+        public var layers: [String]
+
+        public init(kind: Kind, frame: SessionRect, layers: [String] = []) {
+            self.kind = kind
+            self.frame = frame
+            self.layers = layers
+        }
+
+        func contains(x: Double, y: Double) -> Bool {
+            x >= frame.x && x < frame.x + frame.w && y >= frame.y && y < frame.y + frame.h
+        }
+    }
+
+    /// The name of a tap at (`x`, `y`) from the marks under the screen, back to front (the order they
+    /// are drawn in). The front layer is the deepest layer whose mark holds the point (the later one
+    /// when two are as deep); only the targets of that layer count, or the targets outside every
+    /// layer when no layer holds it. Of those, the smallest target holding the point names the tap
+    /// (the later one when two are as small). A tap on a layer where none of its targets is under
+    /// the finger has no name: a row under a dialog does not name a tap on the dialog.
+    public static func tapTarget(x: Double, y: Double, marks: [TapMark]) -> String? {
+        let under = marks.filter { $0.contains(x: x, y: y) }
+        var front: [String] = []
+        for mark in under where mark.kind == .layer && mark.layers.count >= front.count {
+            front = mark.layers
+        }
+        var best: (name: String, area: Double)?
+        for mark in under where mark.layers == front {
+            guard case .target(let name) = mark.kind else { continue }
+            let area = mark.frame.w * mark.frame.h
+            if area <= (best?.area ?? .greatestFiniteMagnitude) { best = (name, area) }
+        }
+        return best?.name
+    }
+
     /// Whether a tap did nothing: no screen, no app event and no change of the frame in
     /// `(t, t + 1500]`. Without frames to compare (not capturing, or none in the window) it is not dead.
     public static func isDead(capturing: Bool, tapAt t: Int, fingerprintBefore: String, after: [After]) -> Bool {

@@ -23,7 +23,22 @@ iOSアプリの中で人が何をしたかを、セッションごとに記録�
 
 ### タップした物の名前
 
-タップには、指の下にある一番小さい`.sessionTarget("…")`の名前が付く。無ければ、当たった部品のアクセシビリティのidが付く。シート・全画面のカバー・ポップオーバー・アラートが出ている間は、その上の名前だけを見る。シートのボタンのタップに、下にある行の名前は付かない。同じビューの中に重ねて描いたパネル（出した画面でない自前の重ね物）は見分けられない。そのボタンには自分の`.sessionTarget`を付ける。
+タップには、指の下にある一番小さい`.sessionTarget("…")`の名前が付く。無ければ、当たった部品のアクセシビリティのidが付く。OSが付けたid（`pencil`などのSF Symbolsの名前・`PopoverDismissRegion`）は使わない。名前は指が触れた時に取る。長押しでシートが開いても、短いタップと同じ名前が付く。シート・全画面のカバー・ポップオーバー・アラートが出ている間は、その上の名前だけを見る。シートのボタンのタップに、下にある行の名前は付かない。SwiftUIのビューの上に重なったUIKitのビュー（タブバー）の下の名前も付かない。
+
+同じビューの中に重ねて表示したレイヤー（`ZStack`や`.overlay`で出すダイアログ・オンボーディング・ピッカー）は、その根に`.sessionLayer()`を付ける。大きさは、そのレイヤーが覆う範囲（暗くした背景も含む）にする。指の下にレイヤーがある間は、その中の名前だけを見る。レイヤーの中で名前の無い所のタップは、下の行の名前でなく、名前なしになる。
+
+```swift
+ZStack {
+    HabitList()   // rows marked .sessionTarget("habit_row")
+    if showTerms {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+            TermsDialog()   // its button marked .sessionTarget("terms_agree")
+        }
+        .sessionLayer()
+    }
+}
+```
 
 本人の操作の後に画面が自分で閉じるときは、閉じる直前に`noteDismissByApp()`を呼ぶ。
 
@@ -124,7 +139,7 @@ targets: [
 |---|---|
 | `SessionsCore` | セッションの区切り・判定・記録する`AppSessions`・バッチ・`SessionSink`・`FileSessionSink`・`DebugSessionSink`・録画の`SessionReplayRecorder`と塊・`SessionLiveStream`。FoundationとObservationだけ |
 | `SessionsCapture` | UIKit。タップ・アプリのライフサイクル・キーボード・スクロールビュー・止まり・MetricKitのクラッシュ・端末の値・録画のコマ（`startReplay`）。UIKitの無い所では空になる |
-| `SessionsSwiftUI` | `.sessionTarget`・`.sessionScroll`・`.sessionRow`・`.sessionMask`・`.sessionNoCapture` |
+| `SessionsSwiftUI` | `.sessionTarget`・`.sessionLayer`・`.sessionScroll`・`.sessionRow`・`.sessionMask`・`.sessionNoCapture` |
 | `SessionsTesting` | テスト用のフェイク。時計・保存先・id・受けた物を残す送り先 |
 
 ## 動く環境

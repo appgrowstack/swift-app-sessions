@@ -123,35 +123,48 @@ public final class SessionCapture {
     private func attach(to window: UIWindow) {
         guard !Self.isSystemWindow(window),
               !(window.gestureRecognizers ?? []).contains(where: { $0 is SessionTapRecognizer }) else { return }
-        let recognizer = SessionTapRecognizer(report: { [weak self, weak window] point in
+        let recognizer = SessionTapRecognizer(nameAt: { [weak window] point in
+            guard let window else { return nil }
+            return Self.targetName(at: point, in: window)
+        }, report: { [weak self, weak window] point, target in
             guard let self, let window else { return }
-            self.tapped(at: point, in: window)
+            self.tapped(at: point, in: window, target: target)
         }, touch: { [weak self] down in
             self?.replay?.touch(down: down)
         })
         window.addGestureRecognizer(recognizer)
     }
 
-    private func tapped(at point: CGPoint, in window: UIWindow) {
+    private func tapped(at point: CGPoint, in window: UIWindow, target: String?) {
         let space = window.screen.coordinateSpace
         let frame = window.convert(window.bounds, to: space)
         let onScreen = window.convert(point, to: space)
         sessions.tap(x: onScreen.x, y: onScreen.y,
                      window: SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height),
-                     target: SessionMarkerView.target(at: point, in: window) ?? Self.accessibleName(at: point, in: window))
+                     target: target)
         replay?.tapped()
+    }
+
+    /// The name of a tap at `point`, taken when the finger goes down: the screen as the person saw
+    /// it. A long press that opens a sheet or changes the row (a habit done by holding it) is named
+    /// like a short tap on the same place; looked up when the finger leaves, it would find the
+    /// screen the press made.
+    static func targetName(at point: CGPoint, in window: UIWindow) -> String? {
+        SessionMarkerView.target(at: point, in: window) ?? accessibleName(at: point, in: window)
     }
 
     /// The accessibility identifier of the control under `point`, for a tap on something not marked
     /// `.sessionTarget`. Only the identifier the developer set, never the label: a label can carry
     /// what the person wrote (a button showing a habit's name). Made into a target name (lowercase
-    /// letters, digits and `_`).
+    /// letters, digits and `_`). The system's own identifiers (``isSystemIdentifier(_:on:)``) are
+    /// passed over: they would look like a name the app gave.
     static func accessibleName(at point: CGPoint, in window: UIWindow) -> String? {
         var view = window.hitTest(point, with: nil)
         var depth = 0
         while let current = view, depth < 8 {
             if !(current is UITextField), !(current is UITextView),
-               let identifier = current.accessibilityIdentifier, let name = targetName(identifier) {
+               let identifier = current.accessibilityIdentifier, !isSystemIdentifier(identifier, on: current),
+               let name = targetName(identifier) {
                 return name
             }
             view = current.superview
@@ -159,6 +172,24 @@ public final class SessionCapture {
         }
         return nil
     }
+
+    /// An identifier the system set, not the app: the name of an SF Symbol the view shows (`book`,
+    /// `pencil`, `chevron.backward`), UIKit's own (`PopoverDismissRegion`), or one on a private view
+    /// of UIKit or SwiftUI.
+    static func isSystemIdentifier(_ identifier: String, on view: UIView) -> Bool {
+        if systemIdentifiers.contains(identifier) || isPrivateSystemClass(NSStringFromClass(type(of: view))) { return true }
+        return UIImage(systemName: identifier) != nil
+    }
+
+    /// `_UIButtonBarButton`, `SwiftUI._UIInheritedView`, `_TtGC7SwiftUI14_UIHostingView…`. Not the
+    /// app's own Swift classes, whose mangled names also start with `_Tt`.
+    static func isPrivateSystemClass(_ name: String) -> Bool {
+        if name.hasPrefix("_Tt") { return name.contains("7SwiftUI") || name.contains("5UIKit") }
+        return name.hasPrefix("_") || name.hasPrefix("SwiftUI._") || name.hasPrefix("UIKit._")
+    }
+
+    /// UIKit's own identifiers that are not a symbol's name.
+    static let systemIdentifiers: Set<String> = ["PopoverDismissRegion"]
 
     /// `Save Habit` → `save_habit`. Nil when nothing of it is a letter or a digit of ASCII.
     static func targetName(_ text: String) -> String? {
@@ -280,14 +311,20 @@ struct SessionScreenController: SessionScreenNode {
     }
 }
 
-/// Reports where a finger left the window and never recognizes anything, so every touch goes on
-/// to the app as if it were not there.
+/// Reports where a finger left the window, with the name taken where it went down, and never
+/// recognizes anything, so every touch goes on to the app as if it were not there. A short tap and
+/// a long press are reported the same way.
 final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelegate {
-    private let report: @MainActor (CGPoint) -> Void
+    private let nameAt: @MainActor (CGPoint) -> String?
+    private let report: @MainActor (CGPoint, String?) -> Void
     private let touch: @MainActor (Bool) -> Void
     private var startedAt: CGPoint?
+    /// The tap's name, taken when the finger went down.
+    private var startedTarget: String?
 
-    init(report: @escaping @MainActor (CGPoint) -> Void, touch: @escaping @MainActor (Bool) -> Void) {
+    init(nameAt: @escaping @MainActor (CGPoint) -> String?, report: @escaping @MainActor (CGPoint, String?) -> Void,
+         touch: @escaping @MainActor (Bool) -> Void) {
+        self.nameAt = nameAt
         self.report = report
         self.touch = touch
         super.init(target: nil, action: nil)
@@ -299,7 +336,9 @@ final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelega
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         if startedAt == nil, let first = touches.first {
-            startedAt = first.location(in: view)
+            let point = first.location(in: view)
+            startedAt = point
+            startedTarget = nameAt(point)
             touch(true)
         }
     }
@@ -308,42 +347,50 @@ final class SessionTapRecognizer: UIGestureRecognizer, UIGestureRecognizerDelega
         if let touch = touches.first, let start = startedAt {
             let end = touch.location(in: view)
             // A drag is a scroll, not a tap.
-            if hypot(end.x - start.x, end.y - start.y) < 10 { report(end) }
+            if hypot(end.x - start.x, end.y - start.y) < 10 { report(end, startedTarget) }
         }
-        if startedAt != nil { touch(false) }
-        startedAt = nil
+        finish()
         state = .failed
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
-        if startedAt != nil { touch(false) }
-        startedAt = nil
+        finish()
         state = .failed
     }
 
     override func reset() {
+        finish()
+    }
+
+    private func finish() {
         if startedAt != nil { touch(false) }
         startedAt = nil
+        startedTarget = nil
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                            shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
 }
 
-/// A view that marks a part of the screen: a named tap target (`.sessionTarget`), something to
-/// hide from the recording (`.sessionMask`), or a screen not to record (`.sessionNoCapture`). It
-/// draws nothing and takes no touches.
+/// A view that marks a part of the screen: a named tap target (`.sessionTarget`), the root of a
+/// layer drawn over the screen (`.sessionLayer`), something to hide from the recording
+/// (`.sessionMask`), or a screen not to record (`.sessionNoCapture`). It draws nothing and takes
+/// no touches.
 public final class SessionMarkerView: UIView {
     public enum Kind: Equatable, Sendable {
         case target(String)
+        case layer
         case mask
         case noCapture
     }
 
     public var kind: Kind
+    /// The layers (`.sessionLayer`) this mark is in, outermost first. A layer's mark ends with itself.
+    public var layers: [String]
 
-    public init(kind: Kind) {
+    public init(kind: Kind, layers: [String] = []) {
         self.kind = kind
+        self.layers = layers
         super.init(frame: .zero)
         isUserInteractionEnabled = false
         backgroundColor = .clear
@@ -353,25 +400,50 @@ public final class SessionMarkerView: UIView {
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
 
-    /// The name of the smallest target under `point` (window coordinates), on the screen in front: with
-    /// a sheet, a full screen cover or a popover up, only the targets on it count. A target of the screen
-    /// under it is still in the window and would take the tap's name otherwise.
+    /// The name of the tap at `point` (window coordinates), from the targets on the screen in front
+    /// (``SessionRules/tapTarget(x:y:marks:)``). With a sheet, a full screen cover or a popover up,
+    /// only the marks on it count. Of the marks drawn in the same view, only those of the front layer
+    /// (`.sessionLayer`) count. A mark under a UIKit view that took the touch outside the mark's own
+    /// view (a tab bar, a view the app laid over SwiftUI) does not count either.
     static func target(at point: CGPoint, in window: UIWindow) -> String? {
         let root = frontView(in: window) ?? window
-        var best: (String, CGFloat)?
+        let hit = window.hitTest(point, with: nil)
+        var marks: [SessionRules.TapMark] = []
         func visit(_ view: UIView) {
             if view.isHidden { return }
-            if let marker = view as? SessionMarkerView, case .target(let name) = marker.kind {
+            if let marker = view as? SessionMarkerView, let kind = marker.tapKind, marker.isUnder(hit) {
                 let frame = marker.convert(marker.bounds, to: window)
-                if frame.contains(point) {
-                    let area = frame.width * frame.height
-                    if area < (best?.1 ?? .greatestFiniteMagnitude) { best = (name, area) }
-                }
+                marks.append(.init(kind: kind, frame: SessionRect(x: frame.minX, y: frame.minY, w: frame.width, h: frame.height),
+                                   layers: marker.layers))
             }
             view.subviews.forEach(visit)
         }
         visit(root)
-        return best?.0
+        return SessionRules.tapTarget(x: point.x, y: point.y, marks: marks)
+    }
+
+    private var tapKind: SessionRules.TapMark.Kind? {
+        switch kind {
+        case .target(let name): .target(name)
+        case .layer: .layer
+        case .mask, .noCapture: nil
+        }
+    }
+
+    /// Whether the view that took the touch is in line with this mark's view: the SwiftUI view the
+    /// mark is drawn in (its nearest hosting view), or the view the mark was added to. The touch's
+    /// view is inside it (a button in it) or holds it (a list's cell that holds the row's SwiftUI
+    /// view). A view beside it (a tab bar laid over it) does not. Nil (nothing took the touch) keeps
+    /// the mark.
+    private func isUnder(_ hit: UIView?) -> Bool {
+        guard let hit, let own = superview else { return true }
+        var host: UIView = own
+        var view: UIView? = own
+        while let current = view {
+            if NSStringFromClass(type(of: current)).contains("HostingView") { host = current; break }
+            view = current.superview
+        }
+        return hit.isDescendant(of: host) || host.isDescendant(of: hit)
     }
 
     /// The view of the screen presented last over the window's root (a sheet, a full screen cover, a

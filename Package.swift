@@ -23,7 +23,7 @@ let package = Package(
         // the device's values and the recording's frames (`SessionReplayCapture`). Compiles to
         // nothing outside UIKit.
         .library(name: "SessionsCapture", targets: ["SessionsCapture"]),
-        // SwiftUI marks: `.sessionTarget`, `.sessionScroll`, `.sessionMask`, `.sessionNoCapture`.
+        // SwiftUI marks: `.sessionTarget`, `.sessionLayer`, `.sessionScroll`, `.sessionMask`, `.sessionNoCapture`.
         .library(name: "SessionsSwiftUI", targets: ["SessionsSwiftUI"]),
         // Test doubles: a clock, a state store, id generator and a recording sink.
         .library(name: "SessionsTesting", targets: ["SessionsTesting"])
@@ -38,6 +38,8 @@ let package = Package(
             name: "SessionsCoreTests",
             dependencies: ["SessionsCore", "SessionsTesting"],
             resources: [.copy("Cases")]
-        )
+        ),
+        // Real SwiftUI views in a window: the iOS simulator only (empty on the Mac).
+        .testTarget(name: "SessionsSwiftUITests", dependencies: ["SessionsCapture", "SessionsSwiftUI"])
     ]
 )

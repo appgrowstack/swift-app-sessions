@@ -23,7 +23,22 @@ The light record keeps no pixels; the recording (below) does. `.sessionMask()` a
 
 ### Naming what was tapped
 
-A tap takes the name of the smallest `.sessionTarget("…")` under the finger, or else the accessibility identifier of the control it hit. While a sheet, a full screen cover, a popover or an alert is presented, only the targets on it count, so a button on a sheet does not take the name of a row under it. A panel drawn over the screen in the same view (a custom overlay, not a presented screen) cannot be told apart: give its buttons a `.sessionTarget` of their own.
+A tap takes the name of the smallest `.sessionTarget("…")` under the finger, or else the accessibility identifier of the control it hit. The system's own identifiers (an SF Symbol's name such as `pencil`, `PopoverDismissRegion`) are not used. The name is taken when the finger goes down, so a long press is named like a short tap even when it opens a sheet. While a sheet, a full screen cover, a popover or an alert is presented, only the targets on it count, so a button on a sheet does not take the name of a row under it. A UIKit view laid over the SwiftUI view (a tab bar) hides the targets under it.
+
+A layer drawn over the screen in the same view (a dialog, an onboarding page or a picker in a `ZStack` or an `.overlay`) needs `.sessionLayer()` on its root, sized as the part of the screen it covers. While a layer is under the finger, only the targets inside it count; a tap on the layer where none of them is has no name, instead of the name of the row under it:
+
+```swift
+ZStack {
+    HabitList()   // rows marked .sessionTarget("habit_row")
+    if showTerms {
+        ZStack {
+            Color.black.opacity(0.3).ignoresSafeArea()
+            TermsDialog()   // its button marked .sessionTarget("terms_agree")
+        }
+        .sessionLayer()
+    }
+}
+```
 
 When a screen closes itself after the person's action, call `noteDismissByApp()` right before closing it:
 
@@ -124,7 +139,7 @@ targets: [
 |---|---|
 | `SessionsCore` | Splitting sessions, the rules, the recorder `AppSessions`, batches, `SessionSink`, `FileSessionSink` and `DebugSessionSink`, the recording's `SessionReplayRecorder` and segments, and `SessionLiveStream`. Foundation and Observation only |
 | `SessionsCapture` | UIKit: taps, the app's lifecycle, the keyboard, scroll views, hangs, MetricKit crashes, the device's values and the recording's frames (`startReplay`). Compiles to nothing outside UIKit |
-| `SessionsSwiftUI` | `.sessionTarget`, `.sessionScroll`, `.sessionRow`, `.sessionMask` and `.sessionNoCapture` |
+| `SessionsSwiftUI` | `.sessionTarget`, `.sessionLayer`, `.sessionScroll`, `.sessionRow`, `.sessionMask` and `.sessionNoCapture` |
 | `SessionsTesting` | Test doubles: a clock, a state store, ids and a recording sink |
 
 ## Requirements

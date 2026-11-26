@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `.sessionLayer()`: marks a layer drawn over the screen in the same view (a dialog, an onboarding page, an
+  offer, a picker in a `ZStack` or an `.overlay`). While a layer is under the finger, only the targets inside it
+  name the tap; a tap on the layer where none of them is has no name. `SessionMarkerView.Kind.layer` and
+  `SessionMarkerView.layers`.
+- `SessionRules.tapTarget(x:y:marks:)` and `SessionRules.TapMark`: the tap's name from the marks under the
+  screen, back to front.
+
+### Fixed
+
+- A tap on a layer drawn over the screen in the same view took the name of the target under it (the terms
+  dialog's "agree" and the offer's "continue for free" were named `habit_row`). With `.sessionLayer()` on the
+  layer, only its own targets count.
+- A tap on a UIKit view laid over the SwiftUI view (a tab bar) took the name of the target under it. A target
+  counts only when the view that took the touch is in the SwiftUI view the target is drawn in.
+- A long press was recorded without a name when it changed the screen (opened a sheet, finished a habit): the
+  name was taken when the finger left. It is now taken when the finger goes down, for short taps too.
+- The system's own accessibility identifiers (an SF Symbol's name such as `book` or `pencil`,
+  `PopoverDismissRegion`, those on UIKit's and SwiftUI's private views) no longer name a tap: they looked like a
+  name the app gave.
+
 ## [0.5.0] - 2026-11-26
 
 ### Added
